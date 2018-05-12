@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:html';
 import 'dart:typed_data';
 
-import "package:CommonLib/CommonLib.dart";
+import "package:CommonLib/predicates.dart";
 
 import 'Formats.dart';
 

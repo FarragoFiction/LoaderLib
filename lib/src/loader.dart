@@ -3,7 +3,7 @@ import 'dart:html';
 import "dart:typed_data";
 
 import "package:archive/archive.dart";
-import "package:CommonLib/CommonLib.dart";
+import "package:CommonLib/path_utils.dart";
 
 import "formats/Formats.dart";
 import "manifest/BundleManifest.dart";
