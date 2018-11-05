@@ -1,16 +1,13 @@
+@TestOn("browser")
+
+import "dart:async";
+
 import 'package:LoaderLib/Loader.dart';
 import 'package:test/test.dart';
 
 void main() {
-  /*group('A group of tests', () {
-    Awesome awesome;
-
-    setUp(() {
-      awesome = new Awesome();
+    test("Package Path Resolution", () async {
+        String file =await Loader.getResource("package:LoaderLib/src/loader.dart", format: Formats.text);
+        expect(file, null);
     });
-
-    test('First Test', () {
-      expect(awesome.isAwesome, isTrue);
-    });
-  });*/
 }

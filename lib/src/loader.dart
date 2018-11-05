@@ -69,7 +69,7 @@ abstract class Loader {
         return _resources[path];
     }
 
-    static Future<T> _load<T>(String path, {FileFormat<T, dynamic> format = null, bool absoluteRoot = false}) {
+    static Future<T> _load<T>(String path, {FileFormat<T, dynamic> format = null, bool absoluteRoot = false}) async {
         if(_resources.containsKey(path)) {
             throw "Resource $path has already been requested for loading";
         }
@@ -155,6 +155,11 @@ abstract class Loader {
     }
 
     static String _getFullPath(String path, [bool absoluteRoot = false]) {
+        // resolve package based urls... this isn't strictly necessary but it's nice
+        if (path.startsWith("package:")) {
+            path = "/packages/${path.substring(8)}";
+        }
+
         // treat leading slashes as absolute root anyway
         if (path.startsWith("/")) {
             absoluteRoot = true;
