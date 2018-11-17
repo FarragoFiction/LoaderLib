@@ -79,13 +79,15 @@ abstract class FileFormat<T,U> {
 
         ButtonElement download = new ButtonElement()..text=caption;
 
-        AnchorElement link = new AnchorElement()..style.display="none"..download=filename();
+        AnchorElement link = new AnchorElement()..style.display="none";
 
         download..onClick.listen((Event e) async {
             T object = objectGetter();
             if (object == null) { return; }
             String URI = await format.objectToDataURI(object);
-            link..href = URI..click();
+            link
+                ..download = filename()
+                ..href = URI..click();
         });
 
         container..append(download)..append(link);
