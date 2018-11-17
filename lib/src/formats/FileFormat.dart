@@ -72,12 +72,12 @@ abstract class FileFormat<T,U> {
         return container;
     }
 
-    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, [String caption = "Save file"]) {
+    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", String filename = "download"}) {
         Element container = new DivElement();
 
         ButtonElement download = new ButtonElement()..text=caption;
 
-        AnchorElement link = new AnchorElement()..style.display="none";
+        AnchorElement link = new AnchorElement()..style.display="none"..download=filename;
 
         download..onClick.listen((Event e) async {
             T object = objectGetter();
