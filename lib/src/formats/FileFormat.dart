@@ -155,7 +155,8 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
 
     @override
     Future<String> dataToDataURI(String content) async {
-        return new Uri.dataFromString(content, encoding:UTF8, base64:true).toString();
+        // \ufeff is the UTF8 byte marker, needed to make sure it's interpreted correctly!
+        return Url.createObjectUrlFromBlob(new Blob(<dynamic>["\ufeff", content], mimeType()));
     }
 
     @override
