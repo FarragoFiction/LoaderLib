@@ -37,12 +37,13 @@ class CSVFormat extends StringFileFormat<List<List<String>>> {
 
     /// Delimiter between values - feel free to change this before loading a file but remember the loader is async!
     String delimiter = ",";
+    static final RegExp _linebreak = new RegExp(r"\r?\n");
 
     @override
     String mimeType() => "text/csv";
 
     @override
-    Future<List<List<String>>> read(String input) async => input.split("\r\n").map((String line) => line.split(delimiter));
+    Future<List<List<String>>> read(String input) async => input.split(_linebreak).map((String line) => line.split(delimiter));
 
     @override
     Future<String> write(List<List<String>> data) async => data.map((List<String> record) => record.join(delimiter)).join("\r\n");
