@@ -12,6 +12,8 @@ abstract class Formats {
 
     static TextFileFormat text;
     static RawBinaryFileFormat binary;
+    static CSVFormat csv;
+    static KeyPairFormat keyPair;
     static BundleManifestFormat manifest;
     static ZipFormat zip;
 
@@ -31,6 +33,11 @@ abstract class Formats {
         addMapping(text, "frag", "x-shader/x-fragment");
 
         binary = new RawBinaryFileFormat();
+
+        csv = new CSVFormat();
+        addMapping(csv, "csv");
+
+        keyPair = new KeyPairFormat();
 
         manifest = new BundleManifestFormat();
 
