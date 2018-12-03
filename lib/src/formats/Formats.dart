@@ -3,16 +3,18 @@ import "../manifest/BundleManifestFormat.dart";
 import "BasicFormats.dart";
 import "FileFormat.dart";
 import "ImageFormats.dart";
+import "TextDataFormats.dart";
 import "ZipFormat.dart";
 
 export "FileFormat.dart";
 
 abstract class Formats {
-    static bool _INITALISED = false;
+    static bool _INITIALISED = false;
 
     static TextFileFormat text;
     static RawBinaryFileFormat binary;
     static CSVFormat csv;
+    static JSONFormat json;
     static KeyPairFormat keyPair;
     static BundleManifestFormat manifest;
     static ZipFormat zip;
@@ -21,8 +23,8 @@ abstract class Formats {
 
 
     static void init() {
-        if (!_INITALISED) {
-            _INITALISED = true;
+        if (!_INITIALISED) {
+            _INITIALISED = true;
         } else {
             return;
         }
@@ -36,6 +38,9 @@ abstract class Formats {
 
         csv = new CSVFormat();
         addMapping(csv, "csv");
+
+        json = new JSONFormat();
+        addMapping(json, "json");
 
         keyPair = new KeyPairFormat();
 
