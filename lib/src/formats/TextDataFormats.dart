@@ -13,7 +13,7 @@ class JSONFormat extends StringFileFormat<Map<String, dynamic>> {
     @override
     Future<Map<String,dynamic>> read(String input) async {
         dynamic data =  _decoder.convert(input);
-        if (!data is Map) {
+        if (!(data is Map)) {
             return <String,dynamic> { "data": data };
         }
         return data;
