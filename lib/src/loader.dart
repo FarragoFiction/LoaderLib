@@ -15,7 +15,8 @@ abstract class Loader {
     static bool _initialised = false;
     static BundleManifest manifest;
     static Map<String, Resource<dynamic>> _resources = <String, Resource<dynamic>>{};
-    static RegExp _slash = new RegExp("[\\/]");
+    static RegExp _slash = new RegExp(r"[\/]");
+    static RegExp _protocol = new RegExp(r"\w+:\/\/");
 
     /// The manifest is now optional and if you don't call to load it explicitly, it's totally ignored.
     static bool _usingManifest = false;
@@ -155,13 +156,14 @@ abstract class Loader {
     }
 
     static String _getFullPath(String path, [bool absoluteRoot = false]) {
+        if (path.startsWith(_protocol)) { // if this is a whole-ass URL just let it go direct
+            return path;
+        }
+        
         // resolve package based urls... this isn't strictly necessary but it's nice
         if (path.startsWith("package:")) {
             path = "/packages/${path.substring(8)}";
-        }
-
-        // treat leading slashes as absolute root anyway
-        if (path.startsWith("/")) {
+        } else if (path.startsWith("/")) { // treat leading slashes as absolute root anyway
             absoluteRoot = true;
             path = path.substring(1);
         }
