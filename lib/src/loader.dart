@@ -72,7 +72,20 @@ abstract class Loader {
 
     static Future<T> _load<T>(String path, {FileFormat<T, dynamic> format = null, bool absoluteRoot = false}) async {
         if(_resources.containsKey(path)) {
-            throw "Resource $path has already been requested for loading";
+
+            // I guess we can put this check here too to eliminate the problem... I guess this makes sense?
+            Resource<dynamic> res = _resources[path];
+            if (res is Resource<T>) {
+                if (res.object != null) {
+                    return res.object;
+                } else {
+                    return res.addListener();
+                }
+            } else {
+                throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
+            }
+
+            //throw "Resource $path has already been requested for loading";
         }
 
         if (format == null) {
