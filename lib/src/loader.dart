@@ -75,15 +75,15 @@ abstract class Loader {
 
             // I guess we can put this check here too to eliminate the problem... I guess this makes sense?
             Resource<dynamic> res = _resources[path];
-            if (res is Resource<T>) {
+            //if (res is Resource<T>) { // forget the type check for now until a better solution is implemented
                 if (res.object != null) {
                     return res.object;
                 } else {
                     return res.addListener();
                 }
-            } else {
-                throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
-            }
+            //} else {
+            //    throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
+            //}
 
             //throw "Resource $path has already been requested for loading";
         }

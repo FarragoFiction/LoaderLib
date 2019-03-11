@@ -1,18 +1,22 @@
 name: LoaderLib
 description: A general purpose file loading and handling library.
-version: 1.24.2
+version: 2.2.0
 homepage: https://github.com/FarragoFiction/LoaderLib
 author: paradoxLands
 
 environment:
-  sdk: '>=1.24.2 <2.0.0'
+  sdk: '>=2.2.0 <3.0.0'
 
 dependencies:
-  archive: ^1.0.33
+  archive: any
   CommonLib:
-    git:
-      url: git://github.com/FarragoFiction/CommonLib.git
-      ref: 'Dart-1.24.2'
+    git: git://github.com/FarragoFiction/CommonLib.git
 
 dev_dependencies:
-  test: ^0.12.0
+  build_runner: ^1.0.0
+  build_test: ^0.10.2
+  build_web_compilers: ^0.4.0
+
+web:
+  compiler:
+    debug: dartdevc
