@@ -53,6 +53,8 @@ abstract class Formats {
         png = new PngFileFormat();
         addMapping(png, "png");
         addMapping(png, "jpg", "image/jpeg");
+        addMapping(png, "jpeg", "image/jpeg");
+        addMapping(png, "gif", "image/gif");
     }
 
     static void addMapping<T,U>(FileFormat<T,U> format, String extension, [String mimeType = null]) {

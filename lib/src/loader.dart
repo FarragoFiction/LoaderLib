@@ -188,7 +188,7 @@ abstract class Loader {
         return PathUtils.adjusted(path);
     }
 
-    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) 
+    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"})
         =>FileFormat.loadButton<T,U>(format, callback, multiple: multiple, caption: caption);
 
     static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", Generator<String> filename = FileFormat.defaultFilename})
