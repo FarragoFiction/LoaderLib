@@ -71,9 +71,9 @@ abstract class FileFormat<T,U> {
         return container;
     }
 
-    static String _defaultFilename() => "download";
+    static String defaultFilename() => "download";
 
-    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", Generator<String> filename = _defaultFilename}) {
+    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", Generator<String> filename = defaultFilename}) {
         Element container = new DivElement();
 
         ButtonElement download = new ButtonElement()..text=caption;
