@@ -32,15 +32,15 @@ abstract class Loader {
         init();
         if (_resources.containsKey(path)) {
             Resource<dynamic> res = _resources[path];
-            if (res is Resource<T>) {
+            //if (res is Resource<T>) {
                 if (res.object != null) {
                     return res.object;
                 } else {
                     return res.addListener();
                 }
-            } else {
-                throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
-            }
+            //} else {
+            //    throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
+            //}
         } else {
             if (_usingManifest && !bypassManifest) {
                 if (manifest == null) {
