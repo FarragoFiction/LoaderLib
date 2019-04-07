@@ -11,14 +11,14 @@ class BundleManifestFormat extends StringFileFormat<BundleManifest> {
 
     @override
     Future<BundleManifest> read(String input) async {
-        List<String> lines = input.split("\n");
+        final List<String> lines = input.split("\n");
 
-        BundleManifest out = new BundleManifest();
+        final BundleManifest out = new BundleManifest();
 
-        String bundle = null;
+        String bundle;
 
         for (int i=1; i<lines.length; i++) {
-            String line = lines[i];
+            final String line = lines[i];
 
             if (line.trim().isEmpty) {
                 // empty line, not in a block
@@ -39,14 +39,14 @@ class BundleManifestFormat extends StringFileFormat<BundleManifest> {
 
     @override
     Future<String> write(BundleManifest data) async {
-        StringBuffer sb = new StringBuffer()
+        final StringBuffer sb = new StringBuffer()
         ..writeln(header())
         ..writeln();
 
-        for (String bundle in data.bundleFiles) {
+        for (final String bundle in data.bundleFiles) {
             sb.writeln(bundle);
-            for (String file in data.getFilesInBundle(bundle)) {
-                sb..writeln("\t$file");
+            for (final String file in data.getFilesInBundle(bundle)) {
+                sb.writeln("\t$file");
             }
             sb.writeln();
         }

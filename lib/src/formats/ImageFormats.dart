@@ -11,7 +11,7 @@ abstract class ImageFileFormat extends BinaryFileFormat<ImageElement> {
 
     @override
     Future<ImageElement> requestObjectFromUrl(String url) async {
-        ImageElement img = new ImageElement(src: url);
+        final ImageElement img = new ImageElement(src: url);
         await img.onLoad.first;
         return img;
     }
@@ -23,14 +23,14 @@ class PngFileFormat extends ImageFileFormat {
 
     @override
     Future<ImageElement> read(ByteBuffer input) async {
-        String url = await this.dataToDataURI(input);
-        ImageElement img = new ImageElement(src: url);
+        final String url = await this.dataToDataURI(input);
+        final ImageElement img = new ImageElement(src: url);
         await img.onLoad.first;
         return img;
     }
 
     @override
-    Future<ByteBuffer> write(ImageElement data) => throw "Write not supported";
+    Future<ByteBuffer> write(ImageElement data) => throw Exception("Write not supported");
 
     @override
     String header() => new String.fromCharCodes(<int>[137, 80, 78, 71, 13, 10, 26, 10]);

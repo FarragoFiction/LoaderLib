@@ -57,7 +57,7 @@ abstract class Formats {
         addMapping(png, "gif", "image/gif");
     }
 
-    static void addMapping<T,U>(FileFormat<T,U> format, String extension, [String mimeType = null]) {
+    static void addMapping<T,U>(FileFormat<T,U> format, String extension, [String mimeType]) {
         extensionMapping[extension] = new ExtensionMappingEntry<T,U>(format, mimeType);
         format.extensions.add(extension);
     }
@@ -66,14 +66,14 @@ abstract class Formats {
 
     static ExtensionMappingEntry<T,U> getFormatEntryForExtension<T,U>(String extension) {
         if (extensionMapping.containsKey(extension)) {
-            ExtensionMappingEntry<T,U> mapping = extensionMapping[extension];
-            FileFormat<T,U> format = mapping.format;
+            final ExtensionMappingEntry<T,U> mapping = extensionMapping[extension];
+            final FileFormat<T,U> format = mapping.format;
             if (format is FileFormat<T,U>) {
                 return mapping;
             }
-            throw "File format for extension .$extension does not match expected types.";
+            throw Exception("File format for extension .$extension does not match expected types.");
         }
-        throw "No file format found for extension .$extension";
+        throw Exception("No file format found for extension .$extension");
     }
 
     static FileFormat<T,U> getFormatForExtension<T,U>(String extension) => getFormatEntryForExtension(extension).format;

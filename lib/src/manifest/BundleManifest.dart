@@ -1,17 +1,17 @@
 class BundleManifest {
-    Map<String,String> _fileToBundle = <String,String>{};
-    Map<String,Set<String>> _bundleToFile = <String,Set<String>>{};
+    final Map<String,String> _fileToBundle = <String,String>{};
+    final Map<String,Set<String>> _bundleToFile = <String,Set<String>>{};
 
-    static RegExp _slash = new RegExp("[\\/]");
+    static final RegExp _slash = new RegExp("[\\/]");
 
     void add(String file, String bundle) {
-        String bundlepath = bundle.substring(0, bundle.lastIndexOf(_slash)+1);
+        final String bundlepath = bundle.substring(0, bundle.lastIndexOf(_slash)+1);
         file = "$bundlepath$file";
 
         _fileToBundle[file] = bundle;
 
         if (!_bundleToFile.containsKey(bundle)) {
-            _bundleToFile[bundle] = new Set<String>();
+            _bundleToFile[bundle] = <String>{};
         }
 
         _bundleToFile[bundle].add(file);

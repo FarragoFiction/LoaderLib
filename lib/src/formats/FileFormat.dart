@@ -6,7 +6,7 @@ import "package:CommonLib/Utility.dart";
 
 import 'Formats.dart';
 
-typedef void LoadButtonCallback<T>(T object, String filename);
+typedef LoadButtonCallback<T> = void Function(T object, String filename);
 
 abstract class FileFormat<T,U> {
     List<String> extensions = <String>[];
@@ -30,18 +30,17 @@ abstract class FileFormat<T,U> {
     Future<U> requestFromUrl(String url);
     Future<T> requestObjectFromUrl(String url) async => read(await requestFromUrl(url));
 
-    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) {
-        return loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption);
-    }
+    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) =>
+        loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption);
 
     static Element loadButtonVersioned<T,U>(List<FileFormat<T,U>> formats, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) {
-        Element container = new DivElement();
+        final Element container = new DivElement();
 
-        FileUploadInputElement upload = new FileUploadInputElement()..style.display="none"..multiple=multiple;
+        final FileUploadInputElement upload = new FileUploadInputElement()..style.display="none"..multiple=multiple;
 
-        Set<String> extensions = new Set<String>();
+        final Set<String> extensions = <String>{};
 
-        for (FileFormat<T,U> format in formats) {
+        for (final FileFormat<T,U> format in formats) {
             extensions.addAll(Formats.getExtensionsForFormat(format));
         }
 
@@ -49,12 +48,12 @@ abstract class FileFormat<T,U> {
             upload.accept = extensions.map((String ext) => ".$ext").join(",");
         }
 
-        upload..onChange.listen((Event e) async {
+        upload.onChange.listen((Event e) async {
             if (upload.files.isEmpty) { return; }
 
-            for (File file in upload.files) {
-                for (FileFormat<T, U> format in formats) {
-                    U output = await format.readFromFile(file);
+            for (final File file in upload.files) {
+                for (final FileFormat<T, U> format in formats) {
+                    final U output = await format.readFromFile(file);
                     if (output != null) {
                         callback(await format.read(output), file.name);
                         break;
@@ -64,9 +63,9 @@ abstract class FileFormat<T,U> {
             upload.value = null;
         });
 
-        container.append(upload);
-
-        container.append(new ButtonElement()..text=caption..onClick.listen((Event e) => upload.click()));
+        container
+            ..append(upload)
+            ..append(new ButtonElement()..text=caption..onClick.listen((Event e) => upload.click()));
 
         return container;
     }
@@ -74,16 +73,16 @@ abstract class FileFormat<T,U> {
     static String defaultFilename() => "download";
 
     static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", Generator<String> filename = defaultFilename}) {
-        Element container = new DivElement();
+        final Element container = new DivElement();
 
-        ButtonElement download = new ButtonElement()..text=caption;
+        final ButtonElement download = new ButtonElement()..text=caption;
 
-        AnchorElement link = new AnchorElement()..style.display="none";
+        final AnchorElement link = new AnchorElement()..style.display="none";
 
-        download..onClick.listen((Event e) async {
-            T object = objectGetter();
+        download.onClick.listen((Event e) async {
+            final T object = objectGetter();
             if (object == null) { return; }
-            String URI = await format.objectToDataURI(object);
+            final String URI = await format.objectToDataURI(object);
             link
                 ..download = filename()
                 ..href = URI..click();
@@ -97,10 +96,10 @@ abstract class FileFormat<T,U> {
 
 abstract class BinaryFileFormat<T> extends FileFormat<T,ByteBuffer> {
     @override
-    bool identify(ByteBuffer buffer) {
-        String head = this.header();
-        List<int> headbytes = head.codeUnits;
-        List<int> bytes = buffer.asUint8List();
+    bool identify(ByteBuffer data) {
+        final String head = this.header();
+        final List<int> headbytes = head.codeUnits;
+        final List<int> bytes = data.asUint8List();
         for (int i=0; i<headbytes.length; i++) {
             if (bytes[i] != headbytes[i]) {
                 return false;
@@ -113,26 +112,27 @@ abstract class BinaryFileFormat<T> extends FileFormat<T,ByteBuffer> {
     Future<ByteBuffer> fromBytes(ByteBuffer buffer) async => buffer;
 
     @override
-    Future<String> dataToDataURI(ByteBuffer buffer) async {
-        return Url.createObjectUrlFromBlob(new Blob(<dynamic>[buffer.asUint8List()], mimeType()));
-    }
+    Future<String> dataToDataURI(ByteBuffer data) async =>
+        Url.createObjectUrlFromBlob(new Blob(<dynamic>[data.asUint8List()], mimeType()));
 
     @override
     Future<ByteBuffer> readFromFile(File file) async {
-        FileReader reader = new FileReader();
+        final FileReader reader = new FileReader();
         reader.readAsArrayBuffer(file);
         await reader.onLoad.first;
         if (reader.result is Uint8List) {
-            return (reader.result as Uint8List).buffer;
+            final Uint8List list = reader.result;
+            return list.buffer;
         }
         return null;
     }
 
     @override
     Future<ByteBuffer> requestFromUrl(String url) async {
-        Completer<ByteBuffer> callback = new Completer<ByteBuffer>();
+        final Completer<ByteBuffer> callback = new Completer<ByteBuffer>();
         HttpRequest.request(url, responseType: "arraybuffer", mimeType: this.mimeType()).then((HttpRequest request) {
-            callback.complete((request.response as ByteBuffer));
+            final ByteBuffer buffer = request.response;
+            callback.complete(buffer);
         });
         return callback.future;
     }
@@ -144,23 +144,23 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
 
     @override
     Future<String> fromBytes(ByteBuffer buffer) async {
-        StringBuffer sb = new StringBuffer();
-        Uint8List ints = buffer.asUint8List();
-        for (int i in ints) {
+        final StringBuffer sb = new StringBuffer();
+        final Uint8List ints = buffer.asUint8List();
+        for (final int i in ints) {
             sb.writeCharCode(i);
         }
         return sb.toString();
     }
 
     @override
-    Future<String> dataToDataURI(String content) async {
+    Future<String> dataToDataURI(String data) async {
         // \ufeff is the UTF8 byte marker, needed to make sure it's interpreted correctly!
-        return Url.createObjectUrlFromBlob(new Blob(<dynamic>["\ufeff", content], mimeType()));
+        return Url.createObjectUrlFromBlob(new Blob(<dynamic>["\ufeff", data], mimeType()));
     }
 
     @override
     Future<String> readFromFile(File file) async {
-        FileReader reader = new FileReader();
+        final FileReader reader = new FileReader();
         reader.readAsText(file);
         await reader.onLoad.first;
         if (reader.result is String) {
@@ -184,13 +184,13 @@ abstract class ElementFileFormat<T> extends FileFormat<T,String> {
     Future<String> requestFromUrl(String url) async => url;
 
     @override
-    Future<String> readFromFile(File file) => throw "Element format doesn't read from files";
+    Future<String> readFromFile(File file) => throw Exception("Element format doesn't read from files");
 
     @override
     Future<String> dataToDataURI(String data) async => data;
 
     @override
-    Future<String> fromBytes(ByteBuffer buffer) => throw "Element format doesn't read from buffers";
+    Future<String> fromBytes(ByteBuffer buffer) => throw Exception("Element format doesn't read from buffers");
 
     @override
     String header() => "";

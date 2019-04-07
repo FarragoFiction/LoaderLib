@@ -4,15 +4,15 @@ import "dart:convert";
 import "FileFormat.dart";
 
 class JSONFormat extends StringFileFormat<Map<String, dynamic>> {
-    static JsonEncoder _encoder = new JsonEncoder.withIndent("\t");
-    static JsonDecoder _decoder = new JsonDecoder();
+    static const JsonEncoder _encoder = JsonEncoder.withIndent("\t");
+    static const JsonDecoder _decoder = JsonDecoder();
 
     @override
     String mimeType() => "application/json";
 
     @override
     Future<Map<String,dynamic>> read(String input) async {
-        dynamic data =  _decoder.convert(input);
+        final dynamic data =  _decoder.convert(input);
         if (!(data is Map)) {
             return <String,dynamic> { "data": data };
         }
@@ -49,30 +49,31 @@ class CSVFormat extends StringFileFormat<List<List<String>>> {
 
 class KeyPairFormat extends StringFileFormat<Map<String,dynamic>> {
 
-    static CSVFormat _csv = new CSVFormat()..delimiter=":";
+    static final CSVFormat _csv = new CSVFormat()..delimiter=":";
 
-    dynamic _interpret(String val) {
+    /*dynamic _interpret(String val) {
         try {
             return int.parse(val);
-        } catch(e) {
+        } on Exception {
             try {
                 return double.parse(val);
-            } catch(e) {
+            } on Exception {
                 return val;
             }
         }
-    }
+    }*/
+    dynamic _interpret(String val) => int.tryParse(val) ?? double.tryParse(val) ?? val;
 
     @override
     String mimeType() => "text/csv";
 
     @override
     Future<Map<String,String>> read(String input) async {
-        List<List<String>> lines = await _csv.read(input);
+        final List<List<String>> lines = await _csv.read(input);
 
-        Map<String,dynamic> map = <String,dynamic>{};
+        final Map<String,dynamic> map = <String,dynamic>{};
 
-        for (List<String> line in lines) {
+        for (final List<String> line in lines) {
             if(line.isEmpty) { continue; }
             if(line.length != 2) { throw new FormatException("Expected 2 values per line, got ${line.length}"); }
 
