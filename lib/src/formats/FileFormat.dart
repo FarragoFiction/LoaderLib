@@ -133,7 +133,7 @@ abstract class BinaryFileFormat<T> extends FileFormat<T,ByteBuffer> {
         HttpRequest.request(url, responseType: "arraybuffer", mimeType: this.mimeType()).then((HttpRequest request) {
             final ByteBuffer buffer = request.response;
             callback.complete(buffer);
-        });
+        }).catchError(callback.completeError);
         return callback.future;
     }
 }
