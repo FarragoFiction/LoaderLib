@@ -26,4 +26,11 @@ class Resource<T> {
         }
         listeners.clear();
     }
+
+    void error(Object error) {
+        for (final Completer<T> listener in listeners) {
+            listener.completeError(error);
+        }
+        listeners.clear();
+    }
 }

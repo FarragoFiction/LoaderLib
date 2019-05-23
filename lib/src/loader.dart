@@ -95,7 +95,9 @@ abstract class Loader {
 
         final Resource<T> res = _createResource(path);
 
-        format.requestObjectFromUrl(_getFullPath(path, absoluteRoot)).then(res.populate);
+        format.requestObjectFromUrl(_getFullPath(path, absoluteRoot))
+            .then(res.populate)
+            .catchError(res.error);
 
         return res.addListener();
     }
