@@ -5,19 +5,19 @@ import "package:LoaderLib/Loader.dart";
 
 Future<void> main() async {
 
-    /*Future<void> testFuture = new Future<void>.delayed(Duration(milliseconds: 10), () { throw Error(); })
-        ..then((void _) { print("testFuture!"); })
-        ..catchError((Object e) => null);*/
+    Future<void> testFuture = new Future<void>.delayed(Duration(milliseconds: 10), () { throw Exception(); })
+        .then((void _) { print("testFuture!"); })
+        .catchError((Object e) => print("caught $e"));
 
     try {
-        await new Future<void>.delayed(Duration(milliseconds: 10), () { throw Exception("poot"); });
+        await Loader.getResource("nonExistentFile.txt");
     } on Exception catch(e) {
         print("caught $e");
     }
 
     try {
         await Loader.getResource("nonExistentFile.txt");
-    } on ProgressEvent catch(e) {
+    } on Exception catch(e) {
         print("caught $e");
     }
 }

@@ -2,5 +2,6 @@ library LoaderLib;
 
 export "src/formats/Formats.dart";
 export 'src/loader.dart';
+export "src/loaderexception.dart";
 
 

@@ -6,6 +6,7 @@ import "package:archive/archive.dart";
 import "package:CommonLib/Utility.dart";
 
 import "formats/Formats.dart";
+import "loaderexception.dart";
 import "manifest/BundleManifest.dart";
 import "resource.dart";
 
@@ -97,7 +98,7 @@ abstract class Loader {
 
         format.requestObjectFromUrl(_getFullPath(path, absoluteRoot))
             .then(res.populate)
-            .catchError(res.error);
+            .catchError(_handleResourceError(res));
 
         return res.addListener();
     }
@@ -196,6 +197,13 @@ abstract class Loader {
 
     static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", Generator<String> filename = FileFormat.defaultFilename}) {
         return FileFormat.saveButton<T, U>(format, objectGetter, caption: caption, filename: filename);
+    }
+
+    static Lambda<dynamic> _handleResourceError<T>(Resource<T> resource) {
+        return (dynamic error) {
+            resource.error(new LoaderException("Could not load ${resource.path}", error));
+            purgeResource(resource.path);
+        };
     }
 }
 
