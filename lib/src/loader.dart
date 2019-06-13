@@ -1,26 +1,19 @@
 import 'dart:async';
 import 'dart:html';
-import "dart:typed_data";
 
-import "package:archive/archive.dart";
 import "package:CommonLib/Utility.dart";
 
 import "formats/Formats.dart";
 import "loaderexception.dart";
-import "manifest/BundleManifest.dart";
 import "resource.dart";
 
 export "resource.dart";
 
 abstract class Loader {
     static bool _initialised = false;
-    static BundleManifest manifest;
     static final Map<String, Resource<dynamic>> _resources = <String, Resource<dynamic>>{};
     static final RegExp _slash = new RegExp(r"[\/]");
     static final RegExp _protocol = new RegExp(r"\w+:\/\/");
-
-    /// The manifest is now optional and if you don't call to load it explicitly, it's totally ignored.
-    static bool _usingManifest = false;
 
     static void init() {
         if (_initialised) { return; }
@@ -43,25 +36,8 @@ abstract class Loader {
             //    throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
             //}
         } else {
-            if (_usingManifest && !bypassManifest) {
-                if (manifest == null) {
-                    await loadManifest();
-                }
-
-                final String bundle = manifest.getBundleForFile(path);
-
-                if (bundle != null) {
-                    await _loadBundle(bundle);
-                    return _createResource(path).object;
-                }
-            }
             return _load(path, format: format, absoluteRoot: absoluteRoot);
         }
-    }
-
-    static Future<void> loadManifest() async {
-        _usingManifest = true;
-        manifest = await Loader.getResource("manifest/manifest.txt", format: Formats.manifest, bypassManifest: true);
     }
 
     static Resource<T> _createResource<T>(String path) {
@@ -119,38 +95,6 @@ abstract class Loader {
             }
         }
         _resources.remove(path);
-    }
-
-    static Future<void> _loadBundle(String path) async {
-        final Archive bundle = await Loader.getResource("$path.bundle", bypassManifest: true);
-
-        final String dir = path.substring(0, path.lastIndexOf(_slash));
-
-        final Completer<void> completer = new Completer<void>();
-        final List<Future<dynamic>> fileFutures = <Future<dynamic>>[];
-
-        for (final ArchiveFile file in bundle.files) {
-            final String extension = file.name.split(".").last;
-            final FileFormat<dynamic, dynamic> format = Formats.getFormatForExtension(extension);
-
-            final String fullname = "$dir/${file.name}";
-
-            if (_resources.containsKey(fullname)) {
-                fileFutures.add(getResource(fullname));
-                continue;
-            }
-
-            final Uint8List data = file.content;
-
-            final Resource<dynamic> res = _createResource(fullname);
-            fileFutures.add(res.addListener());
-
-            format.fromBytes(data.buffer).then((dynamic thing) { format.read(thing).then(res.populate); });
-        }
-
-        Future.wait(fileFutures).then((List<dynamic> list) { completer.complete(); });
-
-        return completer.future;
     }
 
     // JS loading extra special dom stuff

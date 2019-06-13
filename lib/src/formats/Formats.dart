@@ -1,5 +1,3 @@
-import "../manifest/BundleManifestFormat.dart";
-
 import "BasicFormats.dart";
 import "FileFormat.dart";
 import "ImageFormats.dart";
@@ -16,7 +14,6 @@ abstract class Formats {
     static CSVFormat csv;
     static JSONFormat json;
     static KeyPairFormat keyPair;
-    static BundleManifestFormat manifest;
     static ZipFormat zip;
 
     static PngFileFormat png;
@@ -43,8 +40,6 @@ abstract class Formats {
         addMapping(json, "json");
 
         keyPair = new KeyPairFormat();
-
-        manifest = new BundleManifestFormat();
 
         zip = new ZipFormat();
         addMapping(zip, "zip");
