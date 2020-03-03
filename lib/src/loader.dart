@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html';
 
+import "package:archive/archive.dart";
 import "package:CommonLib/Utility.dart";
 
 import "exceptions.dart";
@@ -30,6 +31,8 @@ abstract class Loader {
             return _load(path, format: format, absoluteRoot: absoluteRoot);
         }
     }
+
+
 
     static Resource<T> _createResource<T>(String path) {
         if (!_resources.containsKey(path)) {
@@ -157,5 +160,18 @@ class Asset<T> {
             return Loader.getResource(this.path);
         }
         return null;
+    }
+}
+
+class DataPack {
+    final Archive archive;
+    final Map<String, int> files = <String, int>{};
+
+    DataPack(Archive this.archive, String path) {
+        final List<ArchiveFile> files = this.archive.files;
+        for (int i=0; i<files.length; i++) {
+            final ArchiveFile file = files[i];
+            print(file.name);
+        }
     }
 }

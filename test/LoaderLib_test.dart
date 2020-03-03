@@ -1,5 +1,6 @@
 @TestOn("browser")
 
+import "package:archive/archive.dart";
 import 'package:LoaderLib/Loader.dart';
 import 'package:test/test.dart';
 
@@ -27,5 +28,11 @@ void main() {
         expect(files, equals(<String>["hello", "hello", "hello"]));
 
         Loader.purgeResource("testdata.txt");
+    });
+
+    test("DataPack tests", () async {
+        final Archive zip = await Loader.getResource("folderpack.zip");
+
+        DataPack pack = new DataPack(zip, "");
     });
 }
