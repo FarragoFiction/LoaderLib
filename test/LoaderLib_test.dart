@@ -33,6 +33,6 @@ void main() {
     test("DataPack tests", () async {
         final Archive zip = await Loader.getResource("folderpack.zip");
 
-        DataPack pack = new DataPack(zip, "");
+        DataPack pack = new DataPack(zip);
     });
 }

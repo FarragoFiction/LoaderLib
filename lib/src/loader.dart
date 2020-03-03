@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:html';
 
 import "package:archive/archive.dart";
 import "package:CommonLib/Utility.dart";
 
+import "datapack.dart";
 import "exceptions.dart";
 import "formats/Formats.dart";
 import "resource.dart";
@@ -14,6 +16,12 @@ abstract class Loader {
     static final Map<String, Resource<dynamic>> _resources = <String, Resource<dynamic>>{};
     static final RegExp _slash = new RegExp(r"[\/]");
     static final RegExp _protocol = new RegExp(r"\w+:\/\/");
+
+    static final StreamController<LoaderEvent> _eventBus = new StreamController<LoaderEvent>.broadcast();
+    Stream<LoaderEvent> get eventBus => _eventBus.stream;
+
+    static final SplayTreeSet<DataPack> _dataPacks = new SplayTreeSet<DataPack>();
+    static final Map<String, DataPack> _dataPackFileMap = <String, DataPack>{};
 
     static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false, bool absoluteRoot = false}) async {
         if (_resources.containsKey(path)) {
@@ -32,7 +40,61 @@ abstract class Loader {
         }
     }
 
+    static Future<DataPack> loadDataPack(String filename, {String path, int priority = 1}) async {
+        final Archive zip = await getResource(filename, format: Formats.zip);
+        return mountDataPack(zip, path: path, priority: priority);
+    }
 
+    static DataPack mountDataPack(Archive zip, {String path, int priority = 1}) {
+        final DataPack pack = new DataPack(zip, path: path, priority: priority);
+        _dataPacks.add(pack);
+
+        for (final String filename in pack.fileMap.keys) {
+            purgeResource(filename);
+        }
+
+        _recalculateFileMap();
+
+        _eventBus.add(new LoaderEvent(LoaderEventType.mount, pack.fileMap.keys.toSet()));
+
+        return pack;
+    }
+
+    static void unmountDataPack(DataPack pack){
+        _dataPacks.remove(pack);
+
+        for (final String filename in pack.fileMap.keys) {
+            purgeResource(filename);
+        }
+
+        _recalculateFileMap();
+
+        _eventBus.add(new LoaderEvent(LoaderEventType.unmount, pack.fileMap.keys.toSet()));
+    }
+
+    static void unmountAllDataPacks() {
+        final Set<String> filenames = _dataPackFileMap.keys.toSet();
+
+        _dataPacks.clear();
+        _recalculateFileMap();
+
+        for (final String filename in filenames) {
+            purgeResource(filename);
+        }
+
+        _eventBus.add(new LoaderEvent(LoaderEventType.unmount, filenames));
+    }
+
+    static void _recalculateFileMap() {
+        _dataPackFileMap.clear();
+        for (final DataPack pack in _dataPacks) {
+            for (final String filename in pack.fileMap.keys) {
+                if (!_dataPackFileMap.containsKey(filename)) {
+                    _dataPackFileMap[filename] = pack;
+                }
+            }
+        }
+    }
 
     static Resource<T> _createResource<T>(String path) {
         if (!_resources.containsKey(path)) {
@@ -143,6 +205,10 @@ abstract class Loader {
             purgeResource(resource.path);
         };
     }
+
+    static _destroy() {
+        _eventBus.close();
+    }
 }
 
 class Asset<T> {
@@ -163,15 +229,14 @@ class Asset<T> {
     }
 }
 
-class DataPack {
-    final Archive archive;
-    final Map<String, int> files = <String, int>{};
+enum LoaderEventType {
+    mount,
+    unmount,
+}
 
-    DataPack(Archive this.archive, String path) {
-        final List<ArchiveFile> files = this.archive.files;
-        for (int i=0; i<files.length; i++) {
-            final ArchiveFile file = files[i];
-            print(file.name);
-        }
-    }
+class LoaderEvent {
+    final LoaderEventType type;
+    final Set<String> files;
+
+    const LoaderEvent(LoaderEventType this.type, Set<String> this.files);
 }
