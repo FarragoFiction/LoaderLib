@@ -7,57 +7,45 @@ import "ZipFormat.dart";
 export "FileFormat.dart";
 
 abstract class Formats {
-    static bool _INITIALISED = false;
+    //static bool _INITIALISED = false;
 
-    static TextFileFormat text;
-    static RawBinaryFileFormat binary;
-    static CSVFormat csv;
-    static JSONFormat json;
-    static KeyPairFormat keyPair;
-    static ZipFormat zip;
+    static final TextFileFormat text = new TextFileFormat();
+    static final RawBinaryFileFormat binary = new RawBinaryFileFormat();
+    static final CSVFormat csv = new CSVFormat();
+    static final JSONFormat json = new JSONFormat();
+    static final KeyPairFormat keyPair = new KeyPairFormat();
+    static final ZipFormat zip = new ZipFormat();
 
-    static PngFileFormat png;
+    static final PngFileFormat png = new PngFileFormat();
 
 
-    static void init() {
-        if (!_INITIALISED) {
-            _INITIALISED = true;
-        } else {
-            return;
-        }
+    static final Map<String, ExtensionMappingEntry<dynamic,dynamic>> extensionMapping = <String, ExtensionMappingEntry<dynamic,dynamic>>{
 
-        text = new TextFileFormat();
-        addMapping(text, "txt");
-        addMapping(text, "vert", "x-shader/x-vertex");
-        addMapping(text, "frag", "x-shader/x-fragment");
+        "txt":      mappingEntry(text),
+        "vert":     mappingEntry(text, "x-shader/x-vertex"),
+        "frag":     mappingEntry(text, "x-shader/x-fragment"),
 
-        binary = new RawBinaryFileFormat();
+        "csv":      mappingEntry(csv),
 
-        csv = new CSVFormat();
-        addMapping(csv, "csv");
+        "json":     mappingEntry(json),
 
-        json = new JSONFormat();
-        addMapping(json, "json");
+        "zip":      mappingEntry(zip),
+        "bundle":   mappingEntry(zip),
 
-        keyPair = new KeyPairFormat();
+        "png":      mappingEntry(png),
+        "jpg":      mappingEntry(png, "image/jpeg"),
+        "jpeg":     mappingEntry(png, "image/jpeg"),
+        "gif":      mappingEntry(png, "image/gif"),
+    };
 
-        zip = new ZipFormat();
-        addMapping(zip, "zip");
-        addMapping(zip, "bundle");
-
-        png = new PngFileFormat();
-        addMapping(png, "png");
-        addMapping(png, "jpg", "image/jpeg");
-        addMapping(png, "jpeg", "image/jpeg");
-        addMapping(png, "gif", "image/gif");
+    static ExtensionMappingEntry<T,U> mappingEntry<T,U>(FileFormat<T,U> format, [String mimeType]) {
+        return new ExtensionMappingEntry<T,U>(format, mimeType);
     }
 
     static void addMapping<T,U>(FileFormat<T,U> format, String extension, [String mimeType]) {
-        extensionMapping[extension] = new ExtensionMappingEntry<T,U>(format, mimeType);
+        extensionMapping[extension] = mappingEntry(format, mimeType);
         format.extensions.add(extension);
     }
-
-    static Map<String, ExtensionMappingEntry<dynamic,dynamic>> extensionMapping = <String, ExtensionMappingEntry<dynamic,dynamic>>{};
 
     static ExtensionMappingEntry<T,U> getFormatEntryForExtension<T,U>(String extension) {
         if (extensionMapping.containsKey(extension)) {
@@ -80,5 +68,5 @@ class ExtensionMappingEntry<T,U> {
     FileFormat<T,U> format;
     String mimeType;
 
-    ExtensionMappingEntry(FileFormat<T,U> this.format, String this.mimeType);
+    ExtensionMappingEntry(FileFormat<T,U> this.format, [String this.mimeType]);
 }

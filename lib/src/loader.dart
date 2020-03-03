@@ -3,27 +3,18 @@ import 'dart:html';
 
 import "package:CommonLib/Utility.dart";
 
+import "exceptions.dart";
 import "formats/Formats.dart";
-import "loaderexception.dart";
 import "resource.dart";
 
 export "resource.dart";
 
 abstract class Loader {
-    static bool _initialised = false;
     static final Map<String, Resource<dynamic>> _resources = <String, Resource<dynamic>>{};
     static final RegExp _slash = new RegExp(r"[\/]");
     static final RegExp _protocol = new RegExp(r"\w+:\/\/");
 
-    static void init() {
-        if (_initialised) { return; }
-        _initialised = true;
-
-        Formats.init();
-    }
-
     static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false, bool absoluteRoot = false}) async {
-        init();
         if (_resources.containsKey(path)) {
             final Resource<dynamic> res = _resources[path];
             //if (res is Resource<T>) {
