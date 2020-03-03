@@ -38,7 +38,7 @@ class CSVFormat extends StringFileFormat<List<List<String>>> {
     String mimeType() => "text/csv";
 
     @override
-    Future<List<List<String>>> read(String input) async => input.split(_linebreak).map((String line) => line.split(delimiter));
+    Future<List<List<String>>> read(String input) async => input.split(_linebreak).map((String line) => line.split(delimiter)).toList();
 
     @override
     Future<String> write(List<List<String>> data) async => data.map((List<String> record) => record.join(delimiter)).join("\r\n");
