@@ -14,12 +14,10 @@ class DataPack implements Comparable<DataPack> {
 
         for (int i=0; i<files.length; i++) {
             final ArchiveFile file = files[i];
-            print(file.name);
-
             fileMap["$path${file.name}"] = i;
         }
 
-        print(fileMap);
+        //print(fileMap);
     }
 
     @override

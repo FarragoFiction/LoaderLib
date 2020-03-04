@@ -128,9 +128,19 @@ abstract class Loader {
 
         final Resource<T> res = _createResource(path);
 
-        format.requestObjectFromUrl(_getFullPath(path, absoluteRoot))
-            .then(res.populate)
-            .catchError(_handleResourceError(res));
+        final String fullPath = _getFullPath(path, absoluteRoot);
+
+        if (_dataPackFileMap.containsKey(fullPath)) {
+            final DataPack pack = _dataPackFileMap[fullPath];
+            final ArchiveFile file = pack.archive.files[pack.fileMap[fullPath]];
+            format.fromBytes(file.content.buffer)
+                .then(res.populate)
+                .catchError(_handleResourceError(res));
+        } else {
+            format.requestObjectFromUrl(fullPath)
+                .then(res.populate)
+                .catchError(_handleResourceError(res));
+        }
 
         return res.addListener();
     }
