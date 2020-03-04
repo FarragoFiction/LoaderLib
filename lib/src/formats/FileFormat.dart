@@ -149,16 +149,11 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
     Future<String> fromBytes(ByteBuffer buffer) async {
         final File file = new File(<dynamic>[buffer.asUint8List()], "file from data");
         return readFromFile(file);
-
-        /*final StringBuffer sb = new StringBuffer();
-        final Uint8List ints = buffer.asUint8List();
-        for (final int i in ints) {
-            sb.writeCharCode(i);
-        }
-        return sb.toString();*/
     }
+
     @override
     Future<ByteBuffer> toBytes(String data) async {
+        // The extra byte sequence is the UTF-8 byte marker, to make sure it's interpreted correctly!
         final List<int> bytes = data.codeUnits.toList()..insertAll(0, <int>[0xEF,0xBB,0xBF]);
         return new Uint8ClampedList.fromList(bytes).buffer;
     }
@@ -202,6 +197,7 @@ abstract class ElementFileFormat<T> extends FileFormat<T,String> {
 
     @override
     Future<String> fromBytes(ByteBuffer buffer) => throw Exception("Element format doesn't read from buffers");
+
     @override
     Future<ByteBuffer> toBytes(String data) => throw Exception("Element format doesn't write to buffers");
 
