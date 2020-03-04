@@ -68,22 +68,22 @@ class KeyPairFormat extends StringFileFormat<Map<String,dynamic>> {
             }
         }
     }*/
-    dynamic _interpret(String val) => int.tryParse(val) ?? double.tryParse(val) ?? val;
+    //dynamic _interpret(String val) => int.tryParse(val) ?? double.tryParse(val) ?? val;
 
     @override
     String mimeType() => "text/csv";
 
     @override
     Future<Map<String,String>> read(String input) async {
-        final List<List<String>> lines = await _csv.read(input);
+        final List<List<dynamic>> lines = await _csv.read(input);
 
         final Map<String,dynamic> map = <String,dynamic>{};
 
-        for (final List<String> line in lines) {
+        for (final List<dynamic> line in lines) {
             if(line.isEmpty) { continue; }
             if(line.length != 2) { throw new FormatException("Expected 2 values per line, got ${line.length}"); }
 
-            map[line[0]] = _interpret(line[1]);
+            map[line[0]] = line[1]; //_interpret(line[1]);
         }
 
         return map;

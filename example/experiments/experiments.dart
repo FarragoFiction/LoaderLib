@@ -20,6 +20,9 @@ Future<void> main() async {
     } on Exception catch(e) {
         print("caught $e");
     }
+
+    List<List<dynamic>> csv = await Loader.getResource("blackandwhite.csv");
+    print(csv);
 }
 
 
