@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   archive: any
+  csv: any
   CommonLib:
     git: git://github.com/FarragoFiction/CommonLib.git
 

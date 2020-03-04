@@ -1,6 +1,8 @@
 import "dart:async";
 import "dart:convert";
 
+import "package:csv/csv.dart";
+
 import "FileFormat.dart";
 
 class JSONFormat extends StringFileFormat<Map<String, dynamic>> {
@@ -28,20 +30,24 @@ class JSONFormat extends StringFileFormat<Map<String, dynamic>> {
     String header() => "{";
 }
 
-class CSVFormat extends StringFileFormat<List<List<String>>> {
+class CSVFormat extends StringFileFormat<List<List<dynamic>>> {
 
-    /// Delimiter between values - feel free to change this before loading a file but remember the loader is async!
-    String delimiter = ",";
-    static final RegExp _linebreak = new RegExp(r"\r?\n");
+    String separator = ",";
+    String delimiter = '"';
+    String delimiterEnd = '"';
+    String newline = "\r\n";
+
+    static const CsvToListConverter _decoder = CsvToListConverter();
+    static const ListToCsvConverter _encoder = ListToCsvConverter();
 
     @override
     String mimeType() => "text/csv";
 
     @override
-    Future<List<List<String>>> read(String input) async => input.split(_linebreak).map((String line) => line.split(delimiter)).toList();
+    Future<List<List<dynamic>>> read(String input) async => _decoder.convert(input, fieldDelimiter: separator, textDelimiter: delimiter, textEndDelimiter: delimiterEnd, eol: newline);
 
     @override
-    Future<String> write(List<List<String>> data) async => data.map((List<String> record) => record.join(delimiter)).join("\r\n");
+    Future<String> write(List<List<dynamic>> data) async => _encoder.convert(data, fieldDelimiter: separator, textDelimiter: delimiter, textEndDelimiter: delimiterEnd, eol: newline);
 
     @override
     String header() => "";
@@ -49,7 +55,7 @@ class CSVFormat extends StringFileFormat<List<List<String>>> {
 
 class KeyPairFormat extends StringFileFormat<Map<String,dynamic>> {
 
-    static final CSVFormat _csv = new CSVFormat()..delimiter=":";
+    static final CSVFormat _csv = new CSVFormat()..separator=":";
 
     /*dynamic _interpret(String val) {
         try {
