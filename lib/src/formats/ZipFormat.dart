@@ -10,14 +10,14 @@ class ZipFormat extends BinaryFileFormat<Archive> {
     static final ZipEncoder _encoder = new ZipEncoder();
 
     @override
-    String mimeType() => "application/x-tar";
+    String mimeType() => "application/zip";
 
     @override
-    Future<Archive> read(ByteBuffer input) async => _decoder.decodeBytes(input.asUint8List());
+    Future<Archive> read(ByteBuffer input) async => _decoder.decodeBytes(input.asUint8List().toList());
 
     @override
     Future<ByteBuffer> write(Archive data) async {
-        final Uint8List list = _encoder.encode(data);
+        final Uint8List list = Uint8List.fromList(_encoder.encode(data, level: Deflate.BEST_COMPRESSION));
         return list.buffer;
     }
 

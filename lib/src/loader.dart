@@ -1,36 +1,29 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:html';
-import "dart:typed_data";
 
 import "package:archive/archive.dart";
 import "package:CommonLib/Utility.dart";
 
+import "datapack.dart";
+import "exceptions.dart";
 import "formats/Formats.dart";
-import "loaderexception.dart";
-import "manifest/BundleManifest.dart";
 import "resource.dart";
 
 export "resource.dart";
 
 abstract class Loader {
-    static bool _initialised = false;
-    static BundleManifest manifest;
     static final Map<String, Resource<dynamic>> _resources = <String, Resource<dynamic>>{};
     static final RegExp _slash = new RegExp(r"[\/]");
     static final RegExp _protocol = new RegExp(r"\w+:\/\/");
 
-    /// The manifest is now optional and if you don't call to load it explicitly, it's totally ignored.
-    static bool _usingManifest = false;
+    static final StreamController<LoaderEvent> _eventBus = new StreamController<LoaderEvent>.broadcast();
+    Stream<LoaderEvent> get eventBus => _eventBus.stream;
 
-    static void init() {
-        if (_initialised) { return; }
-        _initialised = true;
-
-        Formats.init();
-    }
+    static final SplayTreeSet<DataPack> _dataPacks = new SplayTreeSet<DataPack>();
+    static final Map<String, DataPack> _dataPackFileMap = <String, DataPack>{};
 
     static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false, bool absoluteRoot = false}) async {
-        init();
         if (_resources.containsKey(path)) {
             final Resource<dynamic> res = _resources[path];
             //if (res is Resource<T>) {
@@ -43,25 +36,64 @@ abstract class Loader {
             //    throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
             //}
         } else {
-            if (_usingManifest && !bypassManifest) {
-                if (manifest == null) {
-                    await loadManifest();
-                }
-
-                final String bundle = manifest.getBundleForFile(path);
-
-                if (bundle != null) {
-                    await _loadBundle(bundle);
-                    return _createResource(path).object;
-                }
-            }
             return _load(path, format: format, absoluteRoot: absoluteRoot);
         }
     }
 
-    static Future<void> loadManifest() async {
-        _usingManifest = true;
-        manifest = await Loader.getResource("manifest/manifest.txt", format: Formats.manifest, bypassManifest: true);
+    static Future<DataPack> loadDataPack(String filename, {String path, int priority = 1}) async {
+        final Archive zip = await getResource(filename, format: Formats.zip);
+        return mountDataPack(zip, path: path, priority: priority);
+    }
+
+    static DataPack mountDataPack(Archive zip, {String path, int priority = 1}) {
+        final DataPack pack = new DataPack(zip, path: path, priority: priority);
+        _dataPacks.add(pack);
+
+        for (final String filename in pack.fileMap.keys) {
+            purgeResource(filename);
+        }
+
+        _recalculateFileMap();
+
+        _eventBus.add(new LoaderEvent(LoaderEventType.mount, pack.fileMap.keys.toSet()));
+
+        return pack;
+    }
+
+    static void unmountDataPack(DataPack pack){
+        _dataPacks.remove(pack);
+
+        for (final String filename in pack.fileMap.keys) {
+            purgeResource(filename);
+        }
+
+        _recalculateFileMap();
+
+        _eventBus.add(new LoaderEvent(LoaderEventType.unmount, pack.fileMap.keys.toSet()));
+    }
+
+    static void unmountAllDataPacks() {
+        final Set<String> filenames = _dataPackFileMap.keys.toSet();
+
+        _dataPacks.clear();
+        _recalculateFileMap();
+
+        for (final String filename in filenames) {
+            purgeResource(filename);
+        }
+
+        _eventBus.add(new LoaderEvent(LoaderEventType.unmount, filenames));
+    }
+
+    static void _recalculateFileMap() {
+        _dataPackFileMap.clear();
+        for (final DataPack pack in _dataPacks) {
+            for (final String filename in pack.fileMap.keys) {
+                if (!_dataPackFileMap.containsKey(filename)) {
+                    _dataPackFileMap[filename] = pack;
+                }
+            }
+        }
     }
 
     static Resource<T> _createResource<T>(String path) {
@@ -96,9 +128,19 @@ abstract class Loader {
 
         final Resource<T> res = _createResource(path);
 
-        format.requestObjectFromUrl(_getFullPath(path, absoluteRoot))
-            .then(res.populate)
-            .catchError(_handleResourceError(res));
+        final String fullPath = _getFullPath(path, absoluteRoot);
+
+        if (_dataPackFileMap.containsKey(fullPath)) {
+            final DataPack pack = _dataPackFileMap[fullPath];
+            final ArchiveFile file = pack.archive.files[pack.fileMap[fullPath]];
+            format.fromBytes(file.content.buffer)
+                .then(res.populate)
+                .catchError(_handleResourceError(res));
+        } else {
+            format.requestObjectFromUrl(fullPath)
+                .then(res.populate)
+                .catchError(_handleResourceError(res));
+        }
 
         return res.addListener();
     }
@@ -119,38 +161,6 @@ abstract class Loader {
             }
         }
         _resources.remove(path);
-    }
-
-    static Future<void> _loadBundle(String path) async {
-        final Archive bundle = await Loader.getResource("$path.bundle", bypassManifest: true);
-
-        final String dir = path.substring(0, path.lastIndexOf(_slash));
-
-        final Completer<void> completer = new Completer<void>();
-        final List<Future<dynamic>> fileFutures = <Future<dynamic>>[];
-
-        for (final ArchiveFile file in bundle.files) {
-            final String extension = file.name.split(".").last;
-            final FileFormat<dynamic, dynamic> format = Formats.getFormatForExtension(extension);
-
-            final String fullname = "$dir/${file.name}";
-
-            if (_resources.containsKey(fullname)) {
-                fileFutures.add(getResource(fullname));
-                continue;
-            }
-
-            final Uint8List data = file.content;
-
-            final Resource<dynamic> res = _createResource(fullname);
-            fileFutures.add(res.addListener());
-
-            format.fromBytes(data.buffer).then((dynamic thing) { format.read(thing).then(res.populate); });
-        }
-
-        Future.wait(fileFutures).then((List<dynamic> list) { completer.complete(); });
-
-        return completer.future;
     }
 
     // JS loading extra special dom stuff
@@ -205,6 +215,10 @@ abstract class Loader {
             purgeResource(resource.path);
         };
     }
+
+    static _destroy() {
+        _eventBus.close();
+    }
 }
 
 class Asset<T> {
@@ -223,4 +237,16 @@ class Asset<T> {
         }
         return null;
     }
+}
+
+enum LoaderEventType {
+    mount,
+    unmount,
+}
+
+class LoaderEvent {
+    final LoaderEventType type;
+    final Set<String> files;
+
+    const LoaderEvent(LoaderEventType this.type, Set<String> this.files);
 }

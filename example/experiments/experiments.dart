@@ -1,28 +1,39 @@
 import "dart:async";
 import "dart:html";
+import "dart:typed_data";
 
+import "package:archive/archive.dart";
 import "package:LoaderLib/Loader.dart";
 
 Future<void> main() async {
 
-    Future<void> testFuture = new Future<void>.delayed(Duration(milliseconds: 10), () { throw Exception(); })
-        .then((void _) { print("testFuture!"); })
-        .catchError((Object e) => print("caught $e"));
+    /*final Archive zip = await Loader.getResource("folderpack.zip");
 
-    try {
-        await Loader.getResource("nonExistentFile.txt");
-    } on Exception catch(e) {
-        print("caught $e");
-    }
+    DataPack pack = new DataPack(zip, path: "examplefolder/someotherfolder");*/
 
-    try {
-        await Loader.getResource("nonExistentFile.txt");
-    } on Exception catch(e) {
-        print("caught $e");
-    }
+    String text = await Loader.getResource("testdata.txt");
+    print("Before mount: $text");
 
-    List<List<dynamic>> csv = await Loader.getResource("blackandwhite.csv");
-    print(csv);
+    final DataPack pack = await Loader.loadDataPack("testpack.zip");
+
+    text = await Loader.getResource("testdata.txt");
+    print("After mount: $text");
+
+    Loader.unmountDataPack(pack);
+
+    text = await Loader.getResource("testdata.txt");
+    print("After unmount: $text");
+
+    final ByteBuffer buffer = await Formats.text.toBytes("this is test data");
+
+    final Archive testZip = new Archive();
+    final List<int> bytes = buffer.asUint8List().toList();
+    final ArchiveFile testFile = new ArchiveFile("testdata.txt", bytes.length, bytes);
+    testZip.addFile(testFile);
+
+    document.body.append(FileFormat.saveButton(Formats.zip, () => testZip, caption: "zip test", filename: () => "downtest.zip"));
+    document.body.append(FileFormat.saveButton(Formats.text, () => "this is a test text file", caption: "text test", filename: () => "downtest.txt"));
+
 }
 
 

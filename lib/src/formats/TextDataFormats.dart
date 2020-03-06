@@ -44,6 +44,7 @@ class CSVFormat extends StringFileFormat<List<List<dynamic>>> {
     String mimeType() => "text/csv";
 
     @override
+
     Future<List<List<dynamic>>> read(String input) async => _decoder.convert(input, fieldDelimiter: separator, textDelimiter: delimiter, textEndDelimiter: delimiterEnd, eol: newline);
 
     @override
