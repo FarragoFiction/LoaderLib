@@ -2,7 +2,8 @@ import "dart:async";
 import "dart:html";
 import "dart:typed_data";
 
-import "package:archive/archive.dart";
+import "package:archive/archive.dart" as A;
+import "package:LoaderLib/Archive.dart";
 import "package:LoaderLib/Loader.dart";
 
 Future<void> main() async {
@@ -11,7 +12,7 @@ Future<void> main() async {
 
     DataPack pack = new DataPack(zip, path: "examplefolder/someotherfolder");*/
 
-    String text = await Loader.getResource("testdata.txt");
+    /*String text = await Loader.getResource("testdata.txt");
     print("Before mount: $text");
 
     final DataPack pack = await Loader.loadDataPack("testpack.zip");
@@ -33,7 +34,15 @@ Future<void> main() async {
 
     document.body.append(FileFormat.saveButton(Formats.zip, () => testZip, caption: "zip test", filename: () => "downtest.zip"));
     document.body.append(FileFormat.saveButton(Formats.text, () => "this is a test text file", caption: "text test", filename: () => "downtest.txt"));
+    */
 
+    String thingy = "hello";
+    String filename = "file.txt";
+
+    Archive archive = new Archive();
+    await archive.setFile(filename, thingy);
+    await archive.setFile(filename, thingy);
+    print(archive.files.toList());
 }
 
 
