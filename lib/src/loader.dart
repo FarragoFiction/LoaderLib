@@ -14,7 +14,7 @@ export "resource.dart";
 
 abstract class Loader {
     static final Map<String, Resource<dynamic>> _resources = <String, Resource<dynamic>>{};
-    static final RegExp _slash = new RegExp(r"[\/]");
+    //static final RegExp _slash = new RegExp(r"[\/]");
     static final RegExp _protocol = new RegExp(r"\w+:\/\/");
 
     static final StreamController<LoaderEvent> _eventBus = new StreamController<LoaderEvent>.broadcast();
@@ -41,7 +41,7 @@ abstract class Loader {
     }
 
     static Future<DataPack> loadDataPack(String filename, {String path, int priority = 1}) async {
-        final Archive zip = await getResource(filename, format: Formats.zip);
+        final Archive zip = await getResource(filename, format: Formats.rawZip);
         return mountDataPack(zip, path: path, priority: priority);
     }
 
@@ -216,8 +216,9 @@ abstract class Loader {
         };
     }
 
-    static _destroy() {
-        _eventBus.close();
+    // ignore: unused_element
+    static void _destroy() {
+        _eventBus.close(); // this is needed to make it shut up... the loader is static
     }
 }
 

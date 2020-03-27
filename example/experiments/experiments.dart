@@ -43,6 +43,9 @@ Future<void> main() async {
     await archive.setFile(filename, thingy);
     await archive.setFile(filename, thingy);
     print(archive.files.toList());
+
+    String retrieved = await archive.getFile(filename);
+    print("retrieved: $retrieved");
 }
 
 

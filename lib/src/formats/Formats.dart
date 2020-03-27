@@ -7,14 +7,13 @@ import "ZipFormat.dart";
 export "FileFormat.dart";
 
 abstract class Formats {
-    //static bool _INITIALISED = false;
-
     static final TextFileFormat text = new TextFileFormat();
     static final RawBinaryFileFormat binary = new RawBinaryFileFormat();
     static final CSVFormat csv = new CSVFormat();
     static final JSONFormat json = new JSONFormat();
     static final KeyPairFormat keyPair = new KeyPairFormat();
     static final ZipFormat zip = new ZipFormat();
+    static final RawZipFormat rawZip = new RawZipFormat();
 
     static final PngFileFormat png = new PngFileFormat();
 
@@ -30,7 +29,7 @@ abstract class Formats {
         "json":     mappingEntry(json),
 
         "zip":      mappingEntry(zip),
-        "bundle":   mappingEntry(zip),
+        "bundle":   mappingEntry(rawZip),
 
         "png":      mappingEntry(png),
         "jpg":      mappingEntry(png, "image/jpeg"),
