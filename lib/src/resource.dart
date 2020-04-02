@@ -1,11 +1,21 @@
 import 'dart:async';
 
+import "formats/FileFormat.dart";
+
 class Resource<T> {
     final String path;
     T object;
+    final FileFormat<T,dynamic> format;
     List<Completer<T>> listeners = <Completer<T>>[];
 
-    Resource(String this.path);
+    Resource(String this.path, FileFormat<T,dynamic> this.format);
+
+    Future<T> getObject(bool forceCanonical) async {
+        if (forceCanonical) {
+            return this.object;
+        }
+        return this.format.processGetResource(this);
+    }
 
     Future<T> addListener() {
         if (this.object != null) {
@@ -22,7 +32,7 @@ class Resource<T> {
         }
         this.object = item;
         for (final Completer<T> listener in listeners) {
-            listener.complete(this.object);
+            listener.complete(this.format.processGetResource(this));
         }
         listeners.clear();
     }

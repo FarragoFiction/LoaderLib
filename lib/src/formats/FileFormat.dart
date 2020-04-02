@@ -4,12 +4,13 @@ import 'dart:typed_data';
 
 import "package:CommonLib/Utility.dart";
 
-import 'Formats.dart';
+import "../loader.dart";
+import "../resource.dart";
 
 typedef LoadButtonCallback<T> = void Function(T object, String filename);
 
 abstract class FileFormat<T,U> {
-    List<String> extensions = <String>[];
+    Set<String> extensions = <String>{};
 
     String mimeType();
     String header();
@@ -31,6 +32,11 @@ abstract class FileFormat<T,U> {
     Future<U> requestFromUrl(String url);
     Future<T> requestObjectFromUrl(String url) async => read(await requestFromUrl(url));
 
+    /// Called by the loader, not for manual use
+    Future<T> processGetResource(Resource<T> resource) async => resource.object;
+    /// Called by the loader, not for manual use
+    Future<void> processPurgeResource(Resource<T> resource) async {}
+
     static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) =>
         loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption);
 
@@ -42,7 +48,7 @@ abstract class FileFormat<T,U> {
         final Set<String> extensions = <String>{};
 
         for (final FileFormat<T,U> format in formats) {
-            extensions.addAll(Formats.getExtensionsForFormat(format));
+            extensions.addAll(format.extensions);
         }
 
         if (!extensions.isEmpty) {
@@ -80,10 +86,16 @@ abstract class FileFormat<T,U> {
 
         final AnchorElement link = new AnchorElement()..style.display="none";
 
+        // hold on to the previous url so we can clean it up automatically
+        String previousUrl;
+
         download.onClick.listen((Event e) async {
+            Loader.revokeBlobUrl(previousUrl);
+
             final T object = objectGetter();
             if (object == null) { return; }
             final String URI = await format.objectToDataURI(object);
+            previousUrl = URI;
             link
                 ..download = filename()
                 ..href = URI..click();
@@ -116,7 +128,7 @@ abstract class BinaryFileFormat<T> extends FileFormat<T,ByteBuffer> {
 
     @override
     Future<String> dataToDataURI(ByteBuffer data) async =>
-        Url.createObjectUrlFromBlob(new Blob(<dynamic>[data.asUint8List()], mimeType()));
+        Loader.createBlobUrl(new Blob(<dynamic>[data.asUint8List()], mimeType()));
 
     @override
     Future<ByteBuffer> readFromFile(File file) async {
@@ -161,7 +173,7 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
     @override
     Future<String> dataToDataURI(String data) async {
         // \ufeff is the UTF8 byte marker, needed to make sure it's interpreted correctly!
-        return Url.createObjectUrlFromBlob(new Blob(<dynamic>["\ufeff", data], mimeType()));
+        return Loader.createBlobUrl(new Blob(<dynamic>["\ufeff", data], mimeType()));
     }
 
     @override

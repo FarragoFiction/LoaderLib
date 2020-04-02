@@ -23,20 +23,22 @@ abstract class Loader {
     static final SplayTreeSet<DataPack> _dataPacks = new SplayTreeSet<DataPack>();
     static final Map<String, DataPack> _dataPackFileMap = <String, DataPack>{};
 
-    static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false, bool absoluteRoot = false}) async {
+    static final Set<String> _blobUrls = <String>{};
+
+    static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false, bool absoluteRoot = false, bool forceCanonical = false}) async {
         if (_resources.containsKey(path)) {
             final Resource<dynamic> res = _resources[path];
-            //if (res is Resource<T>) {
+            //if (res.format == format) {
                 if (res.object != null) {
-                    return res.object;
+                    return res.getObject(forceCanonical);
                 } else {
                     return res.addListener();
                 }
             //} else {
-            //    throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
+            //    throw LoaderException("Requested resource ($path) was initially requested with format ${res.format}, but was requested again with format $format");
             //}
         } else {
-            return _load(path, format: format, absoluteRoot: absoluteRoot);
+            return _load(path, format: format, absoluteRoot: absoluteRoot, forceCanonical: forceCanonical);
         }
     }
 
@@ -96,37 +98,35 @@ abstract class Loader {
         }
     }
 
-    static Resource<T> _createResource<T>(String path) {
+    static Resource<T> _createResource<T>(String path, FileFormat<T,dynamic> format) {
         if (!_resources.containsKey(path)) {
-            _resources[path] = new Resource<T>(path);
+            _resources[path] = new Resource<T>(path, format);
         }
         return _resources[path];
     }
 
-    static Future<T> _load<T>(String path, {FileFormat<T, dynamic> format, bool absoluteRoot = false}) async {
-        if(_resources.containsKey(path)) {
+    static Future<T> _load<T>(String path, {FileFormat<T, dynamic> format, bool absoluteRoot = false, bool forceCanonical = false}) async {
+        /*if(_resources.containsKey(path)) {
 
             // I guess we can put this check here too to eliminate the problem... I guess this makes sense?
             final Resource<dynamic> res = _resources[path];
-            //if (res is Resource<T>) { // forget the type check for now until a better solution is implemented
+            //if (res.format == format) {
                 if (res.object != null) {
-                    return res.object;
+                    return res.getObject(forceCanonical);
                 } else {
                     return res.addListener();
                 }
             //} else {
-            //    throw "Requested resource ($path) is an unexpected type: ${res.object.runtimeType}.";
+            //    throw LoaderException("Requested resource ($path) was initially requested with format ${res.format}, but was requested again with format $format");
             //}
-
-            //throw "Resource $path has already been requested for loading";
-        }
+        }*/
 
         if (format == null) {
             final String extension = path.split(".").last;
             format = Formats.getFormatForExtension(extension);
         }
 
-        final Resource<T> res = _createResource(path);
+        final Resource<T> res = _createResource(path, format);
 
         final String fullPath = _getFullPath(path, absoluteRoot);
 
@@ -146,8 +146,12 @@ abstract class Loader {
     }
 
     /// Sets a resource at a specified path to an object, does not load a file
-    static void assignResource<T>(T object, String path) {
-        _createResource(path).object = object;
+    static Future<void> assignResource<T>(T object, String path, FileFormat<T,dynamic> format) async {
+        if(_resources.containsKey(path)) {
+            final Resource<T> r = _resources[path];
+            await r.format.processPurgeResource(r);
+        }
+        _createResource(path, format).object = object;
     }
 
     /// Removes a resource from the listings, and completes any waiting gets with an error state
@@ -159,6 +163,7 @@ abstract class Loader {
                     c.completeError("Resource purged");
                 }
             }
+            r.format.processPurgeResource(r);
         }
         _resources.remove(path);
     }
@@ -195,8 +200,8 @@ abstract class Loader {
         }
 
         if (absoluteRoot) {
-            final String abspath = "${window.location.protocol}//${window.location.host}/$path";
-            return abspath;
+            final String absPath = "${window.location.protocol}//${window.location.host}/$path";
+            return absPath;
         }
         return PathUtils.adjusted(path);
     }
@@ -214,6 +219,34 @@ abstract class Loader {
             resource.error(new LoaderException("Could not load ${resource.path}", error));
             purgeResource(resource.path);
         };
+    }
+
+    static String createBlobUrl(Blob blob) {
+        final String url = Url.createObjectUrlFromBlob(blob);
+        _blobUrls.add(url);
+        return url;
+    }
+
+    static void revokeBlobUrl(String url) {
+        if (_blobUrls.contains(url)) {
+            _blobUrls.remove(url);
+        }
+        try {
+            Url.revokeObjectUrl(url);
+        } on Exception {
+            // ignore!
+        }
+    }
+
+    static void revokeAllBlobUrls() {
+        for (final String url in _blobUrls) {
+            try {
+                Url.revokeObjectUrl(url);
+            } on Exception {
+                // ignore!
+            }
+        }
+        _blobUrls.clear();
     }
 
     // ignore: unused_element

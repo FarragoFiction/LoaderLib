@@ -1,5 +1,7 @@
 @TestOn("browser")
 
+import "dart:html";
+
 import "package:archive/archive.dart";
 import 'package:LoaderLib/Loader.dart';
 import 'package:test/test.dart';
@@ -30,9 +32,21 @@ void main() {
         Loader.purgeResource("testdata.txt");
     });
 
-    test("DataPack tests", () async {
+    /*test("DataPack tests", () async {
         final Archive zip = await Loader.getResource("folderpack.zip");
 
         DataPack pack = new DataPack(zip);
+    });*/
+
+    test("Canonical resources", () async {
+        final ImageElement img1 = await Loader.getResource("testimage.png");
+        final ImageElement img2 = await Loader.getResource("testimage.png");
+
+        final ImageElement img3 = await Loader.getResource("testimage.png", forceCanonical: true);
+        final ImageElement img4 = await Loader.getResource("testimage.png", forceCanonical: true);
+
+        expect(<bool>[(img1 != img2), (img3 == img4), (img1 != img3)], equals(<bool>[true,true,true]));
+
+        Loader.purgeResource("testimage.png");
     });
 }
