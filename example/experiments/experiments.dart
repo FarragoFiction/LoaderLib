@@ -46,6 +46,8 @@ Future<void> main() async {
 
     String retrieved = await archive.getFile(filename);
     print("retrieved: $retrieved");
+
+    await Loader.getResource("thing.png"); // not there
 }
 
 
