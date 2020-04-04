@@ -36,14 +36,14 @@ abstract class ImageFileFormat extends BinaryFileFormat<ImageElement> {
 
     @override
     /// Images get copies of themselves unless canonical is forced!
-    Future<ImageElement> processGetResource(Resource<ImageElement> resource) {
-        return this.requestObjectFromUrl(resource.object.src);
+    Future<ImageElement> processGetResource(ImageElement resource) {
+        return this.requestObjectFromUrl(resource.src);
     }
 
     @override
     /// Clean up any blob url that has been created when an image is purged
-    Future<void> processPurgeResource(Resource<ImageElement> resource) async {
-        Loader.revokeBlobUrl(resource.object.src);
+    Future<void> processPurgeResource(ImageElement resource) async {
+        Loader.revokeBlobUrl(resource.src);
     }
 }
 

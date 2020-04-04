@@ -149,7 +149,7 @@ abstract class Loader {
     static Future<void> assignResource<T>(T object, String path, FileFormat<T,dynamic> format) async {
         if(_resources.containsKey(path)) {
             final Resource<T> r = _resources[path];
-            await r.format.processPurgeResource(r);
+            await r.purge();
         }
         _createResource(path, format).object = object;
     }

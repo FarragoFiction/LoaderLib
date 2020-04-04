@@ -14,7 +14,7 @@ class Resource<T> {
         if (forceCanonical) {
             return this.object;
         }
-        return this.format.processGetResource(this);
+        return this.format.processGetResource(this.object);
     }
 
     Future<T> addListener() {
@@ -32,9 +32,14 @@ class Resource<T> {
         }
         this.object = item;
         for (final Completer<T> listener in listeners) {
-            listener.complete(this.format.processGetResource(this));
+            listener.complete(this.format.processGetResource(item));
         }
         listeners.clear();
+    }
+
+    Future<void> purge() async {
+        if (this.object == null) { return; }
+        await this.format.processPurgeResource(this.object);
     }
 
     void error(Object error) {

@@ -33,9 +33,9 @@ abstract class FileFormat<T,U> {
     Future<T> requestObjectFromUrl(String url) async => read(await requestFromUrl(url));
 
     /// Called by the loader, not for manual use
-    Future<T> processGetResource(Resource<T> resource) async => resource.object;
+    Future<T> processGetResource(T resource) async => resource;
     /// Called by the loader, not for manual use
-    Future<void> processPurgeResource(Resource<T> resource) async {}
+    Future<void> processPurgeResource(T resource) async {}
 
     static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) =>
         loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption);
