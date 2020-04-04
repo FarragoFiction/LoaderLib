@@ -163,7 +163,9 @@ abstract class Loader {
                     c.completeError("Resource purged");
                 }
             }
-            r.format.processPurgeResource(r);
+            if (r.object != null) {
+                r.format.processPurgeResource(r);
+            }
         }
         _resources.remove(path);
     }
