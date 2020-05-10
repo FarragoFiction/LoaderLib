@@ -11,7 +11,9 @@ dependencies:
   archive: any
   csv: any
   CommonLib:
-    git: git://github.com/FarragoFiction/CommonLib.git
+    git:
+      url: git://github.com/FarragoFiction/CommonLib.git
+      ref: Dart-2.2.0
 
 dev_dependencies:
   build_runner: ^1.0.0
