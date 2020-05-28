@@ -36,7 +36,7 @@ Future<void> main() async {
     document.body.append(FileFormat.saveButton(Formats.text, () => "this is a test text file", caption: "text test", filename: () => "downtest.txt"));
     */
 
-    String thingy = "hello";
+    /*String thingy = "hello";
     String filename = "file.txt";
 
     Archive archive = new Archive();
@@ -47,7 +47,15 @@ Future<void> main() async {
     String retrieved = await archive.getFile(filename);
     print("retrieved: $retrieved");
 
-    await Loader.getResource("thing.png"); // not there
+    await Loader.getResource("thing.png"); // not there*/
+
+    final CanvasElement canvas = new CanvasElement(width:800, height:600);
+    document.body.append(canvas);
+    final CanvasRenderingContext2D ctx = canvas.context2D;
+
+    final ImageElement img = await Loader.getResource("testimage.png");
+
+    ctx.drawImage(img, 0, 0);
 }
 
 
