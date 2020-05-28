@@ -19,9 +19,10 @@ abstract class ImageFileFormat extends BinaryFileFormat<ImageElement> {
     @override
     Future<ImageElement> requestObjectFromUrl(String url) async {
         final Completer<ImageElement> callback = new Completer<ImageElement>();
-        final ImageElement img = new ImageElement(src: url);
+        final ImageElement img = new ImageElement()..crossOrigin="anonymous";
         img.onError.first.then((Event e) { callback.completeError(img); });
         img.onLoad.first.then((Event e) { callback.complete(img); });
+        img.src = url;
         return callback.future;
     }
 
