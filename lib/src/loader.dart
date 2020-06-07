@@ -212,7 +212,7 @@ abstract class Loader {
         return FileFormat.loadButton<T, U>(format, callback, multiple: multiple, caption: caption);
     }
 
-    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", Generator<String> filename = FileFormat.defaultFilename}) {
+    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<Future<T>> objectGetter, {String caption = "Save file", Generator<String> filename = FileFormat.defaultFilename}) {
         return FileFormat.saveButton<T, U>(format, objectGetter, caption: caption, filename: filename);
     }
 

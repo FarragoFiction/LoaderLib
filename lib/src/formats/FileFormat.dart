@@ -79,7 +79,7 @@ abstract class FileFormat<T,U> {
 
     static String defaultFilename() => "download";
 
-    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<T> objectGetter, {String caption = "Save file", Generator<String> filename = defaultFilename}) {
+    static Element saveButton<T,U>(FileFormat<T,U> format, Generator<Future<T>> objectGetter, {String caption = "Save file", Generator<String> filename = defaultFilename}) {
         final Element container = new DivElement();
 
         final ButtonElement download = new ButtonElement()..text=caption;
@@ -92,7 +92,7 @@ abstract class FileFormat<T,U> {
         download.onClick.listen((Event e) async {
             Loader.revokeBlobUrl(previousUrl);
 
-            final T object = objectGetter();
+            final T object = await objectGetter();
             if (object == null) { return; }
             final String URI = await format.objectToDataURI(object);
             previousUrl = URI;
