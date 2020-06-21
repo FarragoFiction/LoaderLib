@@ -38,6 +38,17 @@ void main() {
         DataPack pack = new DataPack(zip);
     });*/
 
+    test("DataPack file loading", () async {
+        final DataPack pack = await Loader.loadDataPack("testpack2.zip");
+
+        final ImageElement img = await Loader.getResource("testimage.png");
+
+        expect(img, isA<ImageElement>());
+
+        Loader.unmountDataPack(pack);
+        Loader.purgeResource("testimage.png");
+    });
+
     test("Canonical resources", () async {
         final ImageElement img1 = await Loader.getResource("testimage.png");
         final ImageElement img2 = await Loader.getResource("testimage.png");

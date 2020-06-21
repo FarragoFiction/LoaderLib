@@ -49,9 +49,31 @@ abstract class ImageFileFormat extends BinaryFileFormat<ImageElement> {
 }
 
 class PngFileFormat extends ImageFileFormat {
+    static final String _header = String.fromCharCodes(<int>[137, 80, 78, 71, 13, 10, 26, 10]);
+
     @override
     String mimeType() => "image/png";
 
     @override
-    String header() => new String.fromCharCodes(<int>[137, 80, 78, 71, 13, 10, 26, 10]);
+    String header() => _header;
+}
+
+class GifFileFormat extends ImageFileFormat {
+    static const String _header = "GIF89a";
+
+    @override
+    String mimeType() => "image/gif";
+
+    @override
+    String header() => _header;
+}
+
+class JpegFileFormat extends ImageFileFormat {
+    static final String _header = String.fromCharCodes(<int>[0xFF, 0xD8, 0xFF, 0xE0]);
+
+    @override
+    String mimeType() => "image/jpeg";
+
+    @override
+    String header() => _header;
 }

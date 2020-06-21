@@ -134,6 +134,7 @@ abstract class Loader {
             final DataPack pack = _dataPackFileMap[fullPath];
             final ArchiveFile file = pack.archive.files[pack.fileMap[fullPath]];
             format.fromBytes(file.content.buffer)
+                .then(format.read)
                 .then(res.populate)
                 .catchError(_handleResourceError(res));
         } else {
@@ -164,7 +165,7 @@ abstract class Loader {
                 }
             }
             if (r.object != null) {
-                r.format.processPurgeResource(r);
+                r.format.processPurgeResource(r.object);
             }
         }
         _resources.remove(path);

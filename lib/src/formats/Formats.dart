@@ -16,6 +16,8 @@ abstract class Formats {
     static final RawZipFormat rawZip = new RawZipFormat();
 
     static final PngFileFormat png = new PngFileFormat();
+    static final GifFileFormat gif = new GifFileFormat();
+    static final JpegFileFormat jpeg = new JpegFileFormat();
 
 
     static final Map<String, ExtensionMappingEntry<dynamic,dynamic>> extensionMapping = <String, ExtensionMappingEntry<dynamic,dynamic>>{
@@ -32,9 +34,9 @@ abstract class Formats {
         "bundle":   mappingEntry(rawZip),
 
         "png":      mappingEntry(png),
-        "jpg":      mappingEntry(png, "image/jpeg"),
-        "jpeg":     mappingEntry(png, "image/jpeg"),
-        "gif":      mappingEntry(png, "image/gif"),
+        "jpg":      mappingEntry(jpeg),
+        "jpeg":     mappingEntry(jpeg),
+        "gif":      mappingEntry(gif),
     };
 
     static ExtensionMappingEntry<T,U> mappingEntry<T,U>(FileFormat<T,U> format, [String mimeType]) {
