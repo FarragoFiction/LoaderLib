@@ -37,22 +37,24 @@ abstract class FileFormat<T,U> {
     /// Called by the loader, not for manual use
     Future<void> processPurgeResource(T resource) async {}
 
-    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) =>
-        loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption);
+    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file", Set<String> accept}) =>
+        loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption, accept:accept);
 
-    static Element loadButtonVersioned<T,U>(List<FileFormat<T,U>> formats, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file"}) {
+    static Element loadButtonVersioned<T,U>(List<FileFormat<T,U>> formats, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file", Set<String> accept}) {
         final Element container = new DivElement();
 
         final FileUploadInputElement upload = new FileUploadInputElement()..style.display="none"..multiple=multiple;
 
-        final Set<String> extensions = <String>{};
+        if (accept == null) {
+            accept = <String>{};
 
-        for (final FileFormat<T,U> format in formats) {
-            extensions.addAll(format.extensions);
+            for (final FileFormat<T, U> format in formats) {
+                accept.addAll(format.extensions.map((String e) => ".$e"));
+            }
         }
 
-        if (!extensions.isEmpty) {
-            upload.accept = extensions.map((String ext) => ".$ext").join(",");
+        if (!accept.isEmpty) {
+            upload.accept = accept.join(",");
         }
 
         upload.onChange.listen((Event e) async {

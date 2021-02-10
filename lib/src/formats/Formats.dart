@@ -22,30 +22,30 @@ abstract class Formats {
 
     static final Map<String, ExtensionMappingEntry<dynamic,dynamic>> extensionMapping = <String, ExtensionMappingEntry<dynamic,dynamic>>{
 
-        "txt":      mappingEntry(text, "txt"),
-        "vert":     mappingEntry(text, "vert", "x-shader/x-vertex"),
-        "frag":     mappingEntry(text, "frag", "x-shader/x-fragment"),
+        "txt":      mappingEntry(text),
+        "vert":     mappingEntry(text, "x-shader/x-vertex"),
+        "frag":     mappingEntry(text, "x-shader/x-fragment"),
 
-        "csv":      mappingEntry(csv, "csv"),
+        "csv":      mappingEntry(csv),
 
-        "json":     mappingEntry(json, "json"),
+        "json":     mappingEntry(json),
 
-        "zip":      mappingEntry(zip, "zip"),
-        "bundle":   mappingEntry(rawZip, "bundle"),
+        "zip":      mappingEntry(zip),
+        "bundle":   mappingEntry(rawZip),
 
-        "png":      mappingEntry(png, "png"),
-        "jpg":      mappingEntry(jpeg, "jpg"),
-        "jpeg":     mappingEntry(jpeg, "jpeg"),
-        "gif":      mappingEntry(gif, "gif"),
+        "png":      mappingEntry(png),
+        "jpg":      mappingEntry(jpeg),
+        "jpeg":     mappingEntry(jpeg),
+        "gif":      mappingEntry(gif),
     };
 
-    static ExtensionMappingEntry<T,U> mappingEntry<T,U>(FileFormat<T,U> format, String extension, [String mimeType]) {
-        format.extensions.add(extension);
+    static ExtensionMappingEntry<T,U> mappingEntry<T,U>(FileFormat<T,U> format, [String mimeType]) {
         return new ExtensionMappingEntry<T,U>(format, mimeType);
     }
 
     static void addMapping<T,U>(FileFormat<T,U> format, String extension, [String mimeType]) {
-        extensionMapping[extension] = mappingEntry(format, extension, mimeType);
+        extensionMapping[extension] = mappingEntry(format, mimeType);
+        format.extensions.add(extension);
     }
 
     static ExtensionMappingEntry<T,U> getFormatEntryForExtension<T,U>(String extension) {
