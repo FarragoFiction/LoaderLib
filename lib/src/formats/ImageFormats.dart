@@ -3,7 +3,6 @@ import "dart:html";
 import "dart:typed_data";
 
 import "../loader.dart";
-import "../resource.dart";
 import "FileFormat.dart";
 
 abstract class ImageFileFormat extends BinaryFileFormat<ImageElement> {
@@ -38,7 +37,7 @@ abstract class ImageFileFormat extends BinaryFileFormat<ImageElement> {
     @override
     /// Images get copies of themselves unless canonical is forced!
     Future<ImageElement> processGetResource(ImageElement resource) {
-        return this.requestObjectFromUrl(resource.src);
+        return this.requestObjectFromUrl(resource.src ?? "");
     }
 
     @override

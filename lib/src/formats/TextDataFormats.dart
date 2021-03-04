@@ -18,7 +18,7 @@ class JSONFormat extends StringFileFormat<Map<String, dynamic>> {
         if (!(data is Map)) {
             return <String,dynamic> { "data": data };
         }
-        return data;
+        return data as Map<String,dynamic>;
     }
 
     @override
@@ -87,7 +87,7 @@ class KeyPairFormat extends StringFileFormat<Map<String,dynamic>> {
             map[line[0]] = line[1]; //_interpret(line[1]);
         }
 
-        return map;
+        return map as Map<String,String>;
     }
 
     @override

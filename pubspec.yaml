@@ -1,15 +1,15 @@
 name: LoaderLib
 description: A general purpose file loading and handling library.
-version: 2.8.1
+version: 2.12.0
 homepage: https://github.com/FarragoFiction/LoaderLib
 author: paradoxLands
 
 environment:
-  sdk: '>=2.8.1 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   archive: any
-  csv: any
+  csv: ^5.0.0-nullsafety.0
   CommonLib:
     git: git://github.com/FarragoFiction/CommonLib.git
 

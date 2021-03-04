@@ -8,7 +8,7 @@ class DataPack implements Comparable<DataPack> {
     final int _id;
     final int priority;
 
-    DataPack(Archive this.archive, {String path, int this.priority = 1}) : this._id = _nextId++ {
+    DataPack(Archive this.archive, {String? path, int this.priority = 1}) : this._id = _nextId++ {
         final List<ArchiveFile> files = this.archive.files;
         path ??= "";
 

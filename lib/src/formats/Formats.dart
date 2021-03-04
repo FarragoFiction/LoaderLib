@@ -39,18 +39,18 @@ abstract class Formats {
         "gif":      mappingEntry(gif),
     };
 
-    static ExtensionMappingEntry<T,U> mappingEntry<T,U>(FileFormat<T,U> format, [String mimeType]) {
+    static ExtensionMappingEntry<T,U> mappingEntry<T,U>(FileFormat<T,U> format, [String? mimeType]) {
         return new ExtensionMappingEntry<T,U>(format, mimeType);
     }
 
-    static void addMapping<T,U>(FileFormat<T,U> format, String extension, [String mimeType]) {
+    static void addMapping<T,U>(FileFormat<T,U> format, String extension, [String? mimeType]) {
         extensionMapping[extension] = mappingEntry(format, mimeType);
         format.extensions.add(extension);
     }
 
     static ExtensionMappingEntry<T,U> getFormatEntryForExtension<T,U>(String extension) {
         if (extensionMapping.containsKey(extension)) {
-            final ExtensionMappingEntry<T,U> mapping = extensionMapping[extension];
+            final ExtensionMappingEntry<T,U> mapping = extensionMapping[extension] as ExtensionMappingEntry<T,U>;
             final FileFormat<T,U> format = mapping.format;
             if (format is FileFormat<T,U>) {
                 return mapping;
@@ -60,15 +60,15 @@ abstract class Formats {
         throw Exception("No file format found for extension .$extension");
     }
 
-    static FileFormat<T,U> getFormatForExtension<T,U>(String extension) => getFormatEntryForExtension(extension).format;
+    static FileFormat<T,U> getFormatForExtension<T,U>(String extension) => getFormatEntryForExtension(extension).format as FileFormat<T,U>;
     static FileFormat<T,U> getFormatForFilename<T,U>(String filename) => getFormatForExtension(filename.split(".").last);
-    static String getMimeTypeForExtension(String extension) => getFormatEntryForExtension(extension).mimeType;
-    static Iterable<String> getExtensionsForFormat(FileFormat<dynamic,dynamic> format) => extensionMapping.keys.where((String ext) => extensionMapping[ext].format == format);
+    static String? getMimeTypeForExtension(String extension) => getFormatEntryForExtension(extension).mimeType;
+    static Iterable<String> getExtensionsForFormat(FileFormat<dynamic,dynamic> format) => extensionMapping.keys.where((String ext) => extensionMapping[ext]?.format == format);
 }
 
 class ExtensionMappingEntry<T,U> {
     FileFormat<T,U> format;
-    String mimeType;
+    String? mimeType;
 
-    ExtensionMappingEntry(FileFormat<T,U> this.format, [String this.mimeType]);
+    ExtensionMappingEntry(FileFormat<T,U> this.format, [String? this.mimeType]);
 }

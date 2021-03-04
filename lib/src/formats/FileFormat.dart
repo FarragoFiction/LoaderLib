@@ -3,9 +3,9 @@ import 'dart:html';
 import 'dart:typed_data';
 
 import "package:CommonLib/Utility.dart";
+import 'package:LoaderLib/Loader.dart';
 
 import "../loader.dart";
-import "../resource.dart";
 
 typedef LoadButtonCallback<T> = void Function(T object, String filename);
 
@@ -37,10 +37,10 @@ abstract class FileFormat<T,U> {
     /// Called by the loader, not for manual use
     Future<void> processPurgeResource(T resource) async {}
 
-    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file", Set<String> accept}) =>
+    static Element loadButton<T,U>(FileFormat<T,U> format, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file", Set<String>? accept}) =>
         loadButtonVersioned(<FileFormat<T,U>>[format], callback, multiple:multiple, caption:caption, accept:accept);
 
-    static Element loadButtonVersioned<T,U>(List<FileFormat<T,U>> formats, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file", Set<String> accept}) {
+    static Element loadButtonVersioned<T,U>(List<FileFormat<T,U>> formats, LoadButtonCallback<T> callback, {bool multiple = false, String caption = "Load file", Set<String>? accept}) {
         final Element container = new DivElement();
 
         final FileUploadInputElement upload = new FileUploadInputElement()..style.display="none"..multiple=multiple;
@@ -58,9 +58,9 @@ abstract class FileFormat<T,U> {
         }
 
         upload.onChange.listen((Event e) async {
-            if (upload.files.isEmpty) { return; }
+            if (upload.files!.isEmpty) { return; }
 
-            for (final File file in upload.files) {
+            for (final File file in upload.files!) {
                 for (final FileFormat<T, U> format in formats) {
                     final U output = await format.readFromFile(file);
                     if (output != null) {
@@ -89,7 +89,7 @@ abstract class FileFormat<T,U> {
         final AnchorElement link = new AnchorElement()..style.display="none";
 
         // hold on to the previous url so we can clean it up automatically
-        String previousUrl;
+        String? previousUrl;
 
         download.onClick.listen((Event e) async {
             Loader.revokeBlobUrl(previousUrl);
@@ -138,10 +138,10 @@ abstract class BinaryFileFormat<T> extends FileFormat<T,ByteBuffer> {
         reader.readAsArrayBuffer(file);
         await reader.onLoad.first;
         if (reader.result is Uint8List) {
-            final Uint8List list = reader.result;
+            final Uint8List list = reader.result! as Uint8List;
             return list.buffer;
         }
-        return null;
+        throw LoaderException("FileReader unable to read binary file");
     }
 
     @override
@@ -161,7 +161,7 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
 
     @override
     Future<String> fromBytes(ByteBuffer buffer) async {
-        final File file = new File(<dynamic>[buffer.asUint8List()], "file from data");
+        final File file = new File(<Object>[buffer.asUint8List()], "file from data");
         return readFromFile(file);
     }
 
@@ -184,9 +184,9 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
         reader.readAsText(file);
         await reader.onLoad.first;
         if (reader.result is String) {
-            return reader.result;
+            return reader.result as String;
         }
-        return null;
+        throw LoaderException("FileReader unable to read string file");
     }
 
     @override

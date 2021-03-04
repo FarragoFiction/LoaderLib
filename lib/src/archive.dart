@@ -8,7 +8,7 @@ import "formats/FileFormat.dart";
 class Archive {
   final raw.Archive rawArchive;
 
-  Iterable<String> _files;
+  late Iterable<String> _files;
   Iterable<String> get files => _files;
 
   Archive() : rawArchive = new raw.Archive() {
@@ -23,9 +23,9 @@ class Archive {
     _files = rawArchive.files.map((raw.ArchiveFile file) => file.name);
   }
 
-  Future<void> setFile<T, U>(String name, T data, {FileFormat<T, U> format}) async {
+  Future<void> setFile<T, U>(String name, T data, {FileFormat<T, U>? format}) async {
     format ??= Formats.getFormatForFilename(name);
-    final raw.ArchiveFile existingFile = rawArchive.findFile(name);
+    final raw.ArchiveFile? existingFile = rawArchive.findFile(name);
 
     final ByteBuffer bytes = await format.toBytes(await format.write(data));
     final raw.ArchiveFile newFile = new raw.ArchiveFile(name, bytes.lengthInBytes, bytes.asUint8List().toList());
@@ -38,8 +38,8 @@ class Archive {
     }
   }
 
-  Future<U> getFile<T, U>(String name, {FileFormat<T,U> format}) async {
-    final raw.ArchiveFile file = rawArchive.findFile(name);
+  Future<U?> getFile<T, U>(String name, {FileFormat<T,U>? format}) async {
+    final raw.ArchiveFile? file = rawArchive.findFile(name);
     if (file == null) { return null; }
 
     format ??= Formats.getFormatForFilename(name);

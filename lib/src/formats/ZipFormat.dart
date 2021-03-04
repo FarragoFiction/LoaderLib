@@ -15,7 +15,7 @@ class ZipFormat extends BinaryFileFormat<Archive> {
 
     @override
     Future<ByteBuffer> write(Archive data) async {
-        final Uint8List list = Uint8List.fromList(RawZipFormat._encoder.encode(data.rawArchive, level: zip.Deflate.BEST_COMPRESSION));
+        final Uint8List list = Uint8List.fromList(RawZipFormat._encoder.encode(data.rawArchive, level: zip.Deflate.BEST_COMPRESSION)!);
         return list.buffer;
     }
 
@@ -35,7 +35,7 @@ class RawZipFormat extends BinaryFileFormat<zip.Archive> {
 
     @override
     Future<ByteBuffer> write(zip.Archive data) async {
-        final Uint8List list = Uint8List.fromList(_encoder.encode(data, level: zip.Deflate.BEST_COMPRESSION));
+        final Uint8List list = Uint8List.fromList(_encoder.encode(data, level: zip.Deflate.BEST_COMPRESSION)!);
         return list.buffer;
     }
 

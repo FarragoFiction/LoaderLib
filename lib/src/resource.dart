@@ -4,17 +4,17 @@ import "formats/FileFormat.dart";
 
 class Resource<T> {
     final String path;
-    T object;
+    T? object;
     final FileFormat<T,dynamic> format;
     List<Completer<T>> listeners = <Completer<T>>[];
 
     Resource(String this.path, FileFormat<T,dynamic> this.format);
 
-    Future<T> getObject(bool forceCanonical) async {
+    Future<T?> getObject(bool forceCanonical) async {
         if (forceCanonical) {
             return this.object;
         }
-        return this.format.processGetResource(this.object);
+        return object == null ? null : this.format.processGetResource(this.object!);
     }
 
     Future<T> addListener() {
@@ -39,7 +39,7 @@ class Resource<T> {
 
     Future<void> purge() async {
         if (this.object == null) { return; }
-        await this.format.processPurgeResource(this.object);
+        await this.format.processPurgeResource(this.object!);
     }
 
     void error(Object error) {

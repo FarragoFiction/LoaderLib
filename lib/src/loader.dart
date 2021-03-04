@@ -25,29 +25,29 @@ abstract class Loader {
 
     static final Set<String> _blobUrls = <String>{};
 
-    static Future<T> getResource<T>(String path, {FileFormat<T, dynamic> format, bool bypassManifest = false, bool absoluteRoot = false, bool forceCanonical = false}) async {
+    static Future<T> getResource<T>(String path, {FileFormat<T, dynamic>? format, bool bypassManifest = false, bool absoluteRoot = false, bool forceCanonical = false}) async {
         if (_resources.containsKey(path)) {
-            final Resource<dynamic> res = _resources[path];
+            final Resource<dynamic> res = _resources[path]!;
             //if (res.format == format) {
                 if (res.object != null) {
-                    return res.getObject(forceCanonical);
+                    return res.getObject(forceCanonical) as Future<T>;
                 } else {
-                    return res.addListener();
+                    return res.addListener() as Future<T>;
                 }
             //} else {
             //    throw LoaderException("Requested resource ($path) was initially requested with format ${res.format}, but was requested again with format $format");
             //}
         } else {
-            return _load(path, format: format, absoluteRoot: absoluteRoot, forceCanonical: forceCanonical);
+            return _load(path, format: format, absoluteRoot: absoluteRoot);
         }
     }
 
-    static Future<DataPack> loadDataPack(String filename, {String path, int priority = 1}) async {
+    static Future<DataPack> loadDataPack(String filename, {String? path, int priority = 1}) async {
         final Archive zip = await getResource(filename, format: Formats.rawZip);
         return mountDataPack(zip, path: path, priority: priority);
     }
 
-    static DataPack mountDataPack(Archive zip, {String path, int priority = 1}) {
+    static DataPack mountDataPack(Archive zip, {String? path, int priority = 1}) {
         final DataPack pack = new DataPack(zip, path: path, priority: priority);
         _dataPacks.add(pack);
 
@@ -102,24 +102,10 @@ abstract class Loader {
         if (!_resources.containsKey(path)) {
             _resources[path] = new Resource<T>(path, format);
         }
-        return _resources[path];
+        return _resources[path]! as Resource<T>;
     }
 
-    static Future<T> _load<T>(String path, {FileFormat<T, dynamic> format, bool absoluteRoot = false, bool forceCanonical = false}) async {
-        /*if(_resources.containsKey(path)) {
-
-            // I guess we can put this check here too to eliminate the problem... I guess this makes sense?
-            final Resource<dynamic> res = _resources[path];
-            //if (res.format == format) {
-                if (res.object != null) {
-                    return res.getObject(forceCanonical);
-                } else {
-                    return res.addListener();
-                }
-            //} else {
-            //    throw LoaderException("Requested resource ($path) was initially requested with format ${res.format}, but was requested again with format $format");
-            //}
-        }*/
+    static Future<T> _load<T>(String path, {FileFormat<T, dynamic>? format, bool absoluteRoot = false}) async {
 
         if (format == null) {
             final String extension = path.split(".").last;
@@ -131,8 +117,8 @@ abstract class Loader {
         final String fullPath = _getFullPath(path, absoluteRoot);
 
         if (_dataPackFileMap.containsKey(fullPath)) {
-            final DataPack pack = _dataPackFileMap[fullPath];
-            final ArchiveFile file = pack.archive.files[pack.fileMap[fullPath]];
+            final DataPack pack = _dataPackFileMap[fullPath]!;
+            final ArchiveFile file = pack.archive.files[pack.fileMap[fullPath]!];
             format.fromBytes(file.content.buffer)
                 .then(format.read)
                 .then(res.populate)
@@ -149,7 +135,7 @@ abstract class Loader {
     /// Sets a resource at a specified path to an object, does not load a file
     static Future<void> assignResource<T>(T object, String path, FileFormat<T,dynamic> format) async {
         if(_resources.containsKey(path)) {
-            final Resource<T> r = _resources[path];
+            final Resource<T> r = _resources[path]! as Resource<T>;
             await r.purge();
         }
         _createResource(path, format).object = object;
@@ -158,7 +144,7 @@ abstract class Loader {
     /// Removes a resource from the listings, and completes any waiting gets with an error state
     static void purgeResource(String path) {
         if (_resources.containsKey(path)) {
-            final Resource<dynamic> r = _resources[path];
+            final Resource<dynamic> r = _resources[path]!;
             for(final Completer<dynamic> c in r.listeners) {
                 if (!c.isCompleted) {
                     c.completeError("Resource purged");
@@ -177,12 +163,12 @@ abstract class Loader {
 
     static Future<ScriptElement> loadJavaScript(String path, [bool absoluteRoot = false]) async {
         if (_loadedScripts.containsKey(path)) {
-            return _loadedScripts[path];
+            return _loadedScripts[path]!;
         }
         final Completer<ScriptElement> completer = new Completer<ScriptElement>();
 
         final ScriptElement script = new ScriptElement();
-        document.head.append(script);
+        document.head?.append(script);
         script.onLoad.listen((Event e) => completer.complete(script));
         script.src = _getFullPath(path, absoluteRoot);
 
@@ -230,7 +216,8 @@ abstract class Loader {
         return url;
     }
 
-    static void revokeBlobUrl(String url) {
+    static void revokeBlobUrl(String? url) {
+        if (url == null) { return; }
         if (_blobUrls.contains(url)) {
             _blobUrls.remove(url);
         }
@@ -259,18 +246,18 @@ abstract class Loader {
 }
 
 class Asset<T> {
-    T item;
-    String path;
+    T? item;
+    String? path;
 
     Asset(String this.path);
     Asset.direct(T this.item);
 
-    Future<T> getAsset() async {
+    Future<T?> getAsset() async {
         if (this.item != null) {
             return this.item;
         }
         else if (this.path != null) {
-            return Loader.getResource(this.path);
+            return Loader.getResource(this.path!);
         }
         return null;
     }
