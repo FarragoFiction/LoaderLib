@@ -147,7 +147,7 @@ abstract class BinaryFileFormat<T> extends FileFormat<T,ByteBuffer> {
     @override
     Future<ByteBuffer> requestFromUrl(String url) async {
         final Completer<ByteBuffer> callback = new Completer<ByteBuffer>();
-        HttpRequest.request(url, responseType: "arraybuffer", mimeType: this.mimeType()).then((HttpRequest request) {
+        HttpRequest.request(url, responseType: "arraybuffer", mimeType: this.mimeType()).then<void>((HttpRequest request) {
             final ByteBuffer buffer = request.response;
             callback.complete(buffer);
         }).catchError(callback.completeError);
