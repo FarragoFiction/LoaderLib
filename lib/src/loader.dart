@@ -15,7 +15,7 @@ export "resource.dart";
 abstract class Loader {
     static final Map<String, Resource<dynamic>> _resources = <String, Resource<dynamic>>{};
     //static final RegExp _slash = new RegExp(r"[\/]");
-    static final RegExp _protocol = new RegExp(r"\w+:\/\/");
+    static final RegExp _protocol = new RegExp(r"\w+://");
 
     static final StreamController<LoaderEvent> _eventBus = new StreamController<LoaderEvent>.broadcast();
     Stream<LoaderEvent> get eventBus => _eventBus.stream;
@@ -29,14 +29,15 @@ abstract class Loader {
         if (_resources.containsKey(path)) {
             final Resource<dynamic> res = _resources[path]!;
             //if (res.format == format) {
+            if (res is Resource<T>) {
                 if (res.object != null) {
-                    return res.getObject(forceCanonical) as Future<T>;
+                    return res.getObject(forceCanonical);
                 } else {
-                    return res.addListener() as Future<T>;
+                    return res.addListener();
                 }
-            //} else {
-            //    throw LoaderException("Requested resource ($path) was initially requested with format ${res.format}, but was requested again with format $format");
-            //}
+            } else {
+                throw LoaderException("Requested resource ($path) was initially requested with format ${res.format}, but was requested again with format $format");
+            }
         } else {
             return _load(path, format: format, absoluteRoot: absoluteRoot);
         }

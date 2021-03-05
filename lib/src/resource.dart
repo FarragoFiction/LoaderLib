@@ -10,11 +10,11 @@ class Resource<T> {
 
     Resource(String this.path, FileFormat<T,dynamic> this.format);
 
-    Future<T?> getObject(bool forceCanonical) async {
+    Future<T> getObject(bool forceCanonical) async {
         if (forceCanonical) {
-            return this.object;
+            return this.object!;
         }
-        return object == null ? null : this.format.processGetResource(this.object!);
+        return this.format.processGetResource(this.object!);
     }
 
     Future<T> addListener() {
