@@ -38,14 +38,14 @@ class Archive {
     }
   }
 
-  Future<U?> getFile<T, U>(String name, {FileFormat<T,U>? format}) async {
+  Future<T?> getFile<T, U>(String name, {FileFormat<T,U>? format}) async {
     final raw.ArchiveFile? file = rawArchive.findFile(name);
     if (file == null) { return null; }
 
     format ??= Formats.getFormatForFilename(name);
 
     final ByteBuffer data = new Uint8List.fromList(file.content).buffer;
-    final U item = await format.fromBytes(data);
+    final T item = await format.read(await format.fromBytes(data));
 
     return item;
   }
