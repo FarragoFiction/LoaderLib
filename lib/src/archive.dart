@@ -49,4 +49,6 @@ class Archive {
 
     return item;
   }
+
+  bool containsFile(String name) => rawArchive.findFile(name) != null;
 }
