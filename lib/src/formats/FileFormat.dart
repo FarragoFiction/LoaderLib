@@ -191,7 +191,8 @@ abstract class StringFileFormat<T> extends FileFormat<T,String> {
 
     @override
     Future<String> requestFromUrl(String url) async {
-        return HttpRequest.getString(url);
+        //return HttpRequest.getString(url);
+        return HttpRequest.request(url, mimeType: this.mimeType()).then((HttpRequest request) => request.responseText!);
     }
 }
 
